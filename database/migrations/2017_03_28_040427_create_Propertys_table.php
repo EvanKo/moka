@@ -13,7 +13,7 @@ class CreatePropertysTable extends Migration
      */
     public function up()
     {
-        Schema::create('Propertys', function (Blueprint $table) {
+        Schema::create('Properties', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('moka')->comment('身份');
             $table->integer('member')->default(0)->comment('上次会员等级');

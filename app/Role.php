@@ -13,6 +13,7 @@ class Role extends Model
       ,'v'
       ,'fee'
       ,'role'
+      ,'lastest'
       ,'fans'
       ,'idols'
       ,'name'

@@ -50,6 +50,8 @@ class LoginController extends BaseController
           $input['moka'] = $num;
           $input['name'] = $name;
           $input['sex'] = $sex;
+          $input['head'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
+          $input['lastest'] = date('y-m-d',time());
           $result = Role::create($input);
           $result = Property::create($input);
           $result = $this->returnMsg('200',"ok",$result);
