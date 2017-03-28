@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateWechatTable extends Migration
+class CreateReportsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,11 @@ class CreateWechatTable extends Migration
      */
     public function up()
     {
-        Schema::create('wechats', function (Blueprint $table) {
+        Schema::create('Reports', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('openid');
-            $table->string('city');
-            $table->string('headimgurl');
-            $table->string('country');
-            $table->string('province');
-            $table->string('sex');
-            $table->string('nickname');
+            $table->integer('moka')->comment('作者摩卡号');
+            $table->longText('content')->comment('内容');
+            $table->integer('pending')->comment('是否已审核');
             $table->timestamps();
         });
     }
@@ -33,6 +29,6 @@ class CreateWechatTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('wechats');
+        Schema::dropIfExists('Reports');
     }
 }

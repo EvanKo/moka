@@ -45,7 +45,8 @@ class AuthController extends BaseController
         $user['random'] = rand(1000000,10000000);
         // return $user;
         $token = JWTAuth::fromUser($user);
-        return response()->json(compact('token'));
+        $result = $this->returnMsg('200','ok',$token);
+        return response()->json(compact('result'));
     }
 
 
@@ -54,8 +55,8 @@ class AuthController extends BaseController
     public function logout(){
       // $token = $request->get('token');
         JWTAuth::refresh();
-        $arr = array ('LOG OUT'=>"SUCCESSED");
-        return response()->json(compact('arr'));
+        $result = $this->returnMsg('200','ok');
+        return response()->json(compact('result'));
     }
 
 }

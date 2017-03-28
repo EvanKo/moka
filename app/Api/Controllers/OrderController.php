@@ -1,167 +1,67 @@
 <?php
+
 namespace App\Api\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redis;
-use App\Drivers;
-use JWTAuth;
-use App\OrderRecord;
-use App\Http\Requests;
 use App\Api\Controllers\BaseController;
-use Illuminate\Support\Facades\DB;
+use App\Api\Controllers\AppreciateController;
+use App\Api\Controllers\CommentController;
+use Illuminate\Support\Facades\Session;
+use Curl\Curl;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Foundation\Testing\TestCase;
+use App\Http\Requests;
+use App\Order;
+use JWTAuth;
+use DB;
+use File;
+
 class OrderController extends BaseController
 {
 
     public function __construct(){
         parent::__construct();
     }
-
-  /**
-   *@author Arius
-   *@function get all record for a user by token
-   *
-   *@todo model not exit
-   *@return success or not
-   */
-    public function addRecord(Request $request)
-    {
-      $user = JWTAuth::touser();
-      $detail = Redis::hgetall('usecar:'.$user['tel']);
-      //To get the drive's position AND driverPhone from redis;
-      $driverPhone = $detail['driverPhone'];
-      $driverPosition = Redis::hget('driver:'.$detail['driverPhone'], 'driverPosition');
-
-      if ($detail) {
-        $input['userphone']=$user['tel'];
-        $input['driverPhone']=$driverPhone;
-        $input['orderNum']=time().rand(10,100);
-        $input['from']=$detail['from'];
-        $input['price']=$detail['price'];
-        $input['discount']=0;
-        $input['time']=date('y-m-d h:i:s',time());
-        $input['passengerNum']=$detail['passengerNum'];
-        $input['destination']=$detail['destination'];
-        $result=OrderRecord::create($input);
+    //发订单
+    public function make(Request $request){
+      $role = JWTAuth::toUser();
+      $price = $request->input('price',null);
+      $type = $request->input('type',null);
+      $content = $request->input('content',null);
+      $img = $request->file('img',null);
+      $this->returnReq($price,'price');
+      $this->returnReq($type,'type');
+      $this->returnReq($content,'content');
+      $this->returnReq($img,'img');
+      $root = public_path().'/photo/order/'.$role['moka'].'/';
+      $root2 = '/photo/order/'.$role['moka'].'/';
+      if(!file_exists($root)){
+        mkdir($root);
       }
-      else {
-        $result = $this->returnMsg('500','ERROR REQUEST');
-        return response()->json($result);
-      }
-      if ($result) {
-        $result = $this->returnMsg('200','SAVED',['orderNum'=>$input['orderNum']]);
-        Redis::del('usecar:'.$request->get('tel'));
-        return response()->json($result);
-      }
-      else {
-        $result = $this->returnMsg('500','ERROR ARRAY');
-        return response()->json(compact($result));
-      }
-    }
-    /**
-     *@author Arius
-     *@function drivers refuse the order after accpeted
-     *
-     *
-     *@return success or not
-     */
-      public function orderBack(Request $request)
-      {
-        $user = JWTAuth::touser();
-        $existname = Redis::EXISTS('usecar:'.$user['tel']);
-        if ($existname) {
-          $name = Redis::hset('usecar:'.$user['tel'],'isAccept',0);
-          $name = Redis::hset('usecar:'.$user['tel'],'driverPhone',null);
-          $result = $this->returnMsg('200','ok');
-          return response()->json($result);
-        }
-        else {
-          $result = $this->returnMsg('500','order Not Found');
-          return response()->json($result);
-        }
-      }
-  /**
-   *@author Arius
-   *@function set star for order service
-   *
-   *@return success or not
-   */
-    public function orderStar(Request $request)
-    {
-
-      $ownertel = JWTAuth::toUser();
-
-      $old = OrderRecord::where('orderNum','=',$request->input('num'));
-      $last = OrderRecord::where('orderNum','=',$request->input('num'))->first();
-      if ($last) {
-        if ($ownertel['tel']!=$last['userphone']) {
-          $result = $this->returnMsg('500','NO PERMISSION');
-          return response()->json($result);
-        }
-        $last = json_decode($last,true);
-        $last['comment']=$request->input('star');
-        $result=$old->update($last);
-
-        $driverStar = DB::table('drivers')
-            ->where('driverPhone',$last['driverPhone'])
-            ->value('stars');
-        //update the driver 's stars
-        DB::table('drivers')
-            ->where('driverPhone',$last['driverPhone'])
-            ->update(['stars' => ($driverStar+$last['comment'])/2]);
-        if ($result) {
-          $result = $this->returnMsg('200','ok');
-          return response()->json($result);
-        }
-        else {
-          $result = $this->returnMsg('500','fail update');
-          return response()->json($result);
-        }
-      }
-      else {
-          $result = $this->returnMsg('500','error orderNum');
-          return response()->json($result);
-      }
-    }
-  /**
-   *@author Arius
-   *@function get all record for a user by token
-   *
-   *@return record json
-   */
-    public function orderRecordList()
-    {
-      $order=JWTAuth::toUser();
-      $orderTel=$order['tel'];
-      $list=OrderRecord::where("userphone","=",$orderTel)->first();
-      if ($list) {
-        return $list;
-      }
-      $result = $this->returnMsg('500','error number');
+      $num = md5(time()).".".$img->getClientOriginalExtension();
+      $img->move( $root,$num);
+      $input = $request->all();
+      $input['img'] = $_SERVER['HTTP_HOST'].$root2.$num;
+      $input['imgnum'] = $num;
+      $input['moka'] = $role['moka'];
+      $result = Order::create($input);
+      $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
     }
-    /**
-     *@author Arius
-     *@function get an information by id
-     *
-     *
-     *@return record json
-     */
-    public function orderRecordOne(Request $request)
-    {
-      $one=OrderRecord::where("orderNum","=",$request->get('num'))->first();
-      $ownertel = JWTAuth::toUser();
-      $ownertel = $ownertel['tel'];
-      if ($one) {
-        if ($ownertel!=$one['userphone']) {
-          $result = $this->returnMsg('500','NO permission');
-          return response()->json($result);
-        }
-      }else{
-        $result = $this->returnMsg('500','error id');
+    //删除订单
+    public function delete(Request $request){
+      $role = JWTAuth::toUser();
+      $id = $request->input('id',null);
+      $object = Order::find($id);
+      if ($object['moka'] != $role['moka']) {
+        $result = $this->returnMsg('500','no permission');
         return response()->json($result);
       }
-      $result = $this->returnMsg('200','ok',$one);
+      File::delete(public_path().'/photo/order/'.$object['moka'].'/'.$object['imgnum']);
+      AppreciateController::deleall(2,$object['id']);
+      CommentController::deleall(2,$object['id']);
+      $result = $object->delete();
+      $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
     }
-
 }

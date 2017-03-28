@@ -1,5 +1,4 @@
 <?php
-use App\User;
 use Illuminate\Http\Request;
 
 /*
@@ -15,62 +14,37 @@ use Illuminate\Http\Request;
 
 $api = app('Dingo\Api\Routing\Router');
 $api->version('v1', function ($api) {
+
     $api->group(['namespace' => 'App\Api\Controllers'], function ($api) {
-      $api->get('test','LoginController@test');
-      $api->get('/login', 'LoginController@index');
-      $api->get('/sms', 'LoginController@message');
-      $api->get('/toke', 'AuthController@authenticate');
-      $api->get('/code', 'LoginController@code');
-
-
-      $api->group(['middleware' => 'apiweb'], function ($api) {
+      $api->post('login', 'LoginController@login');//finish
+      $api->post('register', 'LoginController@register');
 
       $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
-          $api->post('/sess', 'LoginController@sessionSet');
-          $api->post('/check', 'LoginController@check');
-          $api->group(['middleware' => 'checkphone'], function ($api) {
-             $api->get('/addrecord', 'OrderController@addRecord');
-             $api->post('/setstar', 'OrderController@orderStar');
-             $api->post('/back', 'OrderController@orderBack');
-             $api->get('/recordlist', 'OrderController@orderRecordList');
-             $api->get('/recordone','OrderController@orderRecordOne');
-             $api->get('/logout','AuthController@logout');
-             $api->get('/test','LoginController@test');
-           });
-         });
-        });
+        //登录注册相关
+        $api->post('role', 'LoginController@roleUpdate');//finish
+        $api->post('head', 'LoginController@headUpdate');//finish
+        $api->post('checkmanager', 'LoginController@checkmanager');//finish
+        //动态
+        $api->post('makemoment', 'MomentController@make');//finish
+        $api->post('delemoment', 'MomentController@delete');//finish
+        $api->get('moment', 'MomentController@moment');//finish
+        //评论
+        $api->post('makecomment', 'CommentController@make');//finish
+        $api->post('delecomment', 'CommentController@dele');//finish
+        $api->post('commentlist', 'CommentController@list');//finish
+        //赞
+        $api->post('zan', 'AppreciateController@handle');//finish
+        $api->post('zanlist', 'AppreciateController@alllist');
+        //关注
+        $api->post('follow', 'FanController@handle');//finish
+        $api->post('idols', 'FanController@idol');//finish
+        $api->post('fans', 'FanController@fan');//finish
+        //主页
+        $api->post('person', 'MainpageController@main');
+        //订单
+        $api->post('makeorder', 'OrderController@make');//finish
+        $api->post('deleorder', 'OrderController@delete');//finish
+        // $api->get('moment', 'MomentController@moment');
+      });
     });
-
-
-    $api->group(['namespace' => 'App\Api\GoModule\Controllers'], function ($api) {
-      $api->group(['middleware' => 'apiweb'], function ($api) {
-        $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
-           $api->group(['middleware' => 'checkphone'], function ($api) {
-            $api->post('/userCheckOrder', 'GoController@userCheckOrder');
-            $api->post('/checkDriverLocation', 'GoController@checkDriverLocation');
-            $api->post('/user/orderSave', 'UserPostController@orderSave');
-            $api->post('/user/carNum', 'UserPostController@carNum');
-            $api->post('/user/price', 'UserPostController@price');
-            $api->post('/user/changeInfo', 'UserChangeInfoController@changeInfo');
-            $api->post('/user/sendCode', 'UserChangeInfoController@sessionSet');
-           });
-        });
-       });
-    });
-    $api->group(['namespace' => 'App\Api\Controllers'], function ($api) {
-        $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
-
-        });
-    });
-
-
-//driver
-$api->group(['middleware' =>'web','prefix'=>'Driver'], function ($api) {
-
-    $api->get('start', 'driver\CommonController@start');
-    $api->get('end', 'driver\CommonController@end');
-    $api->get('pushOrder', 'driver\CommonController@pushOrder');
-    $api->get('getOrder', 'driver\CommonController@getOrder');
-    $api->get('finishOrder', 'driver\CommonController@finishOrder');
-});
 });

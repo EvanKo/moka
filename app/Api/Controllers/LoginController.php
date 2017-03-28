@@ -1,15 +1,17 @@
 <?php
 
 namespace App\Api\Controllers;
-
+use File;
 use App\Api\Controllers\BaseController;
 use Illuminate\Support\Facades\Session;
 use Curl\Curl;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
-use App\Wechat;
+use App\Role;
+use App\Property;
 use JWTAuth;
 use TopClient;
 use ResultSet;
@@ -23,174 +25,130 @@ class LoginController extends BaseController
     public function __construct(){
         parent::__construct();
     }
-  /**
-   *@author Arius
-   *@function to get wechat code
-   *
-   *@return  redirect a url with the code
-   */
-    public function index(){
-      $appid = "wx1aabdf768c60315f";
-      $redirect_uri = urlencode("http://".$_SERVER['HTTP_HOST']."/api/code");
-      //不弹窗取用户openid，snsapi_base;弹窗取用户openid及详细信息，snsapi_userinfo;
-      $url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$appid."&redirect_uri=".$redirect_uri."&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect";
-      return redirect($url);
-    }
-    /**
-     *@author Arius
-     *@function to get wechat users detail and store
-     *@param wechatcode and remote ip
-     *@return  user openid
-     */
-    public function info($code,$ip){
-      $appid = "wx3dc8172320f8e0e4";
-      $appsecret = "41c1f037f44f8e2a4dc7151b8412be36";
-      $url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=".$appid."&secret=".$appsecret."&code=".$code."&grant_type=authorization_code";
-      $curl = new Curl();
-      $curl->setOpt(CURLOPT_SSL_VERIFYPEER, FALSE);
-      $curl->get($url);
-      $response = $curl->response;
-
-      $response = json_decode($response,true);
-
-      $access_token = $response['access_token'];
-
-      $openid = $response['openid'];
-      $url_info ="https://api.weixin.qq.com/sns/userinfo?access_token=".$access_token."&openid=".$openid."&lang=zh_CN";
-      $curl->get($url_info);
-      $info = $curl->response;
-      $info = json_decode($info,true);
-      $info['lastip'] = $ip;
-      LoginController::store($info);
-      $curl->close();
-      return $openid;
-    }
-    /**
-     *@author Arius
-     *@function store wechat usr
-     *@param array of user information
-     *
-     */
-    public function store($request){
-      $openid = $request['openid'];
-      $user = wechat::where("openid","=",$openid)->first();
-      if ($user == null) {
-        Wechat::create($request);
+    //内部判断是已存在手机号
+    protected function phonecheck($tel){
+      if($last = Role::where('tel','=',$tel)->first()){
+        return false;
       }
-      else {
-        $user->update($request);
+      return true;
+    }
+    //注册
+    public function register(Request $request){
+      $tel = $request->input('tel',null);
+      $name = $request->input('name',null);
+      $sex = $request->input('sex',null);
+      $password = $request->input('password',null);
+      if ($tel == null || $password == null || $name == null || $sex == null) {
+          $result = $this->returnMsg('500',"INFORMATION ERROR");
+          return response()->json($result);
       }
-      return "HAVED STORED!!";
+      if (LoginController::phonecheck($tel)) {
+          $num = time()%100000;
+          $num = rand(1,9)*100000 + $num;
+          $input['tel']=$tel;
+          $input['password']=sha1($password);
+          $input['moka'] = $num;
+          $input['name'] = $name;
+          $input['sex'] = $sex;
+          $result = Role::create($input);
+          $result = Property::create($input);
+          $result = $this->returnMsg('200',"ok",$result);
+          return response()->json($result);
+      }
+      $result = $this->returnMsg('500',"TEL HAVE EXISTED");
+      return response()->json($result);
     }
-    /**
-     *@author Arius
-     *@function set a session for tel number checking
-     *@param tel
-     *@return sms sending status
-     */
-    public function sessionSet(Request $request)
-    {
-      $time = strtotime(date('Y-m-d H:i:s',time()));//integer
-      $time = $time%10000;
-      $value = array ('lastip'=>$_SERVER['REMOTE_ADDR'],'tel'=>$request->input('tel'));
-      $num = 'k'.strval($time);
-      Session::put($num, $value);
-      // Session::flush();
-      // $data = Session::all();
-      // return $data;
-      $result=LoginController::message($time,$request['tel']);
-      return $result;
-    }
-
-    /**
-     *@author Arius
-     *@function send sms combined with Alidayu
-     *@param checking code ,sms number
-     *
-     *@todo  ip update for Alidayu white list
-     */
-    public function message($num,$tel){
-    	$c = new TopClient();
-    	$c->appkey = "23553742";  //  App Key的值 这个在开发者控制台的应用管理点击你添加过的应用就有了
-    	$c->secretKey = "170f0500f220c2b61a95c2e9065a6670"; //App Secret的值也是在哪里一起的 你点击查看就有了
-    	$req = new AlibabaAliqinFcSmsNumSendRequest();
-    	$req->setExtend(""); //这个是用户名记录那个用户操作
-    	$req->setSmsType("normal"); //这个不用改你短信的话就默认这个就好了
-    	$req->setSmsFreeSignName("滴达"); //这个是签名
-    	$req->setSmsParam("{'code':'".$num."'}"); //这个是短信签名
-    	$req->setRecNum($tel); //这个是写手机号码
-    	$req->setSmsTemplateCode("SMS_32485128"); //这个是模版ID 主要也是短信内容
-        $resp = $c->execute($req);
-        $resp = json_encode($resp);
-        $resp = json_decode($resp);
-        if(isset($resp->result)){
-            if($resp->result->err_code == 0){
-                $result = $this->returnMsg('200','OK');
-    	        return response()->json($result);
-            }
+    //登陆
+    public function login(Request $request){
+      $tel = $request->input('tel',null);
+      $password = $request->input('password',null);
+      if ($tel==null||$password==null) {
+          $result = $this->returnMsg('500',"TEL OR PASSWORD ERROR");
+          return response()->json($result);
+      }
+      if($last = Role::where('tel','=',$tel)->first()) {
+        if (sha1($password) == $last['password']) {
+          if (!strpos($last['lastest'],date('y-m-d',time()))) {
+            $object = DB::table('Roles')
+                      ->where('id', $last['id']);
+            $object->update(['login' => $last['login']+1]);
+            $object->update(['lastest' => date('y-m-d',time())]);
+          }
+          $data = DB::table('Roles')
+          ->where('tel',$tel)
+          ->select('id','name','province','city','sex')
+          ->get();
+          $last['now'] = time();
+          $last['secret'] = "wearevtmers";
+          $last['random'] = rand(1000000,10000000);
+          $result['token'] = JWTAuth::fromUser($last);
+          $result['information'] = $data;
+          $result = $this->returnMsg('200','ok',$result);
+          return response()->json($result);
         }
-            $result = $this->returnMsg('500',$resp);
-    	    return response()->json($result);
-    }
-    /**
-     *@author Arius
-     *@function check code by session and set tel
-     *@param checking code
-     *
-     *
-     */
-    public function check(Request $request)
-    {
-      $num = $request->input('num');
-      $num = 'k'.strval($num);
-      $usr = JWTAuth::toUser();
-      $ip = $usr['lastip'];
-      $value = Session::get($num, 'default');
-      // return $value;
-      if ($value != 'default') {
-        if ($value['lastip']==$ip) {
-          $usr['tel']=$value['tel'];
-          $input=array();
-          $input['openid']=$usr['openid'];
-          $input['tel']=$usr['tel'];
-          // return $input;
-          LoginController::store($input);
-          Session::forget($num);
-          JWTAuth::refresh();
-          $usr['now'] = time();
-          $usr['secret'] = "wearevtmers";
-          $usr['random'] = rand(1000000,10000000);
-          // return $usr;
-          $token = JWTAuth::fromUser($usr);
-          return response()->json(compact('token'));
-        }
-        $result = $this->returnMsg('500','ERROR CODE');
+        $result = $this->returnMsg('500',"TEL OR PASSWORD ERROR");
         return response()->json($result);
       }
-        $result = $this->returnMsg('500','ERROR CODE');
+      $result = $this->returnMsg('500',"TEL NOT EXISTED");
+      return response()->json($result);
+    }
+    //上传资料
+    public function update(){
+
+    }
+    //上传头像
+    public function headUpdate(Request $request){
+      $root = JWTAuth::toUser();
+      $id = $root['id'];
+      $moka = $root['moka'];
+      $file = $request->file('head',null);
+      if ($file == null) {
+        $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
+      }
+      File::delete(public_path().'/photo/head/'.$moka.'.jpg');
+      File::delete(public_path().'/photo/head/'.$moka.'.jpeg');
+      File::delete(public_path().'/photo/head/'.$moka.'.png');
+      $file->move( public_path().'/photo/head/',$moka.".".$file->getClientOriginalExtension());
+      $object = Role::find($id);
+      $input['head'] = $_SERVER['HTTP_HOST']."/photo/head/".$moka.".".$file->getClientOriginalExtension();
+      $result = $object->update($input);
+      $result = $this->returnMsg('200',"ok",$result);
+      return response()->json($result);
     }
-    /**
-     *@author Arius
-     *@function wechat code test
-     *
-     *
-     *
-     */
-    public function code($request){
-      $arr = array ('code'=>$_GET['code']);
-      return response()->json(compact('arr'));
+    //选择角色
+    public function roleUpdate(Request $request){
+      $root = JWTAuth::toUser();
+      $id = $root['id'];
+      $role = $request->input('role',null);
+      if ($role==null||($role<1||$role>4)) {
+          $result = $this->returnMsg('500',"error role ");
+          return response()->json($result);
+      }
+      $object = Role::find($id);
+      if (isset($object['role'])) {
+        $result = $this->returnMsg('500',"error role ");
+        return response()->json($result);
+      }
+      $input['role'] = $role;
+      $result = $object->update($input);
+      $result = $this->returnMsg('200',"ok",$result);
+      return response()->json($result);
     }
-
-
-    public function test(){
-      $curl = new Curl();//测试Curl
-      // $curl->get('www.obstacle.cn:7007/api/works');
-      // $response = $curl->response;
-      // $response = json_encode($response,true);
-      // $response = json_decode($response,true);
+    //查询
+    public function checkmanager(){
       return JWTAuth::toUser();
-      $arr = array ('status'=>"success");
-      return response()->json(compact('arr'));
+    }
+    //认证
+    public function auth(){
+
+    }
+    //忘记密码
+    public function forget(){
+
+    }
+    //短信
+    public function sess(){
+
     }
 }

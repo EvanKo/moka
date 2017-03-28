@@ -2,6 +2,7 @@
 namespace App\Http\Middleware;
 use Closure;
 use JWTAuth;
+use DB;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
@@ -32,6 +33,13 @@ class GetUserFromToken
                 'message' => 'token_invalid',
                 'data' => '',
             ]);
+        }
+        $role = JWTAuth::toUser($token);
+        if (!strpos($role['lastest'],date('y-m-d',time()))) {
+          $object = DB::table('Roles')
+                    ->where('id', $role['id']);
+          $object->update(['login' => $role['login']+1]);
+          $object->update(['lastest' => date('y-m-d',time())]);
         }
         return $next($request);
     }
