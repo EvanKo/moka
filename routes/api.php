@@ -1,4 +1,4 @@
-<?php
+  <?php
 use Illuminate\Http\Request;
 
 /*
@@ -45,6 +45,9 @@ $api->version('v1', function ($api) {
         $api->post('makeorder', 'OrderController@make');//finish
         $api->post('deleorder', 'OrderController@delete');//finish
         // $api->get('moment', 'MomentController@moment');
+        //制作摩卡
+        $api->post('makemoka', 'MokaController@start');
+        // $api->post('deleorder', 'OrderController@delete');//finish
       });
     });
 });

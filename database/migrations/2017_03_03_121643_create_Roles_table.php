@@ -19,7 +19,7 @@ class CreateRolesTable extends Migration
             $table->string('tel')->unique()->comment('手机号');
             $table->integer('login')->default(1)->comment('登陆日数');
             $table->date('lastest')->comment('最近登陆日期');
-            $table->integer('level')->default(1)->comment('会员等级');
+            $table->integer('level')->default(0)->comment('会员等级');
             $table->integer('sex')->nullable()->comment('性别');
             $table->integer('v')->default(0)->comment('认证');
             $table->integer('fee')->default(0)->comment('打赏次数');

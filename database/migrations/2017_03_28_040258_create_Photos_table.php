@@ -16,6 +16,7 @@ class CreatePhotosTable extends Migration
         Schema::create('Photos', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('mokaid')->comment('摩卡地址');
+            $table->integer('imgnum')->comment('图片号码');
             $table->longText('img_s')->comment('小图网址');
             $table->longText('img_snum')->comment('小图地址');
             $table->longText('img_l')->comment('大图网址');

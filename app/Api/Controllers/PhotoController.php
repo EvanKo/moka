@@ -26,6 +26,12 @@ class ActivityController extends BaseController
     public function detailed(Request $request){
 
     }
+
+    //上传图片
+    public function update(Request $request){
+      
+    }
+
     protected static function small($background, $width, $height, $newfile) {
      list($s_w, $s_h)=getimagesize($background);//获取原图片高度、宽度
      if ($width && ($s_w < $s_h)) {
