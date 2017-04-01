@@ -101,15 +101,13 @@ trait InteractsWithPages
     /**
      * Clean the crawler and the subcrawlers values to reset the page context.
      *
-     * @return $this
+     * @return void
      */
     protected function resetPageContext()
     {
         $this->crawler = null;
 
         $this->subCrawlers = [];
-
-        return $this;
     }
 
     /**
@@ -203,7 +201,7 @@ trait InteractsWithPages
      *
      * @param  string  $uri
      * @param  string|null  $message
-     * @return $this
+     * @return void
      *
      * @throws \Illuminate\Foundation\Testing\HttpException
      */
@@ -221,8 +219,6 @@ trait InteractsWithPages
 
             throw new HttpException($message, null, $responseException);
         }
-
-        return $this;
     }
 
     /**
@@ -649,7 +645,7 @@ trait InteractsWithPages
      * Assert that a filtered Crawler returns nodes.
      *
      * @param  string  $filter
-     * @return $this
+     * @return void
      *
      * @throws \InvalidArgumentException
      */
@@ -662,8 +658,6 @@ trait InteractsWithPages
                 "Nothing matched the filter [{$filter}] CSS query provided for [{$this->currentUri}]."
             );
         }
-
-        return $this;
     }
 
     /**
