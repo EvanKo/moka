@@ -1,5 +1,5 @@
 <?php
-namespace GatewayWorker\Lib;
+namespace Workerman\MySQL;
 
 use Exception;
 use PDO;
@@ -9,7 +9,7 @@ use PDOException;
  * 数据库连接类，依赖 PDO_MYSQL 扩展
  * 在 https://github.com/auraphp/Aura.SqlQuery 的基础上修改而成
  */
-class DbConnection
+class Connection
 {
     /**
      * SELECT
@@ -1941,11 +1941,13 @@ class DbConnection
     public function beginTrans()
     {
         try {
-            $this->pdo->beginTransaction();
+            return $this->pdo->beginTransaction();
         } catch (PDOException $e) {
             // 服务端断开时重连一次
             if ($e->errorInfo[1] == 2006 || $e->errorInfo[1] == 2013) {
-                $this->pdo->beginTransaction();
+                $this->closeConnection();
+                $this->connect();
+                return $this->pdo->beginTransaction();
             } else {
                 throw $e;
             }
@@ -1957,7 +1959,7 @@ class DbConnection
      */
     public function commitTrans()
     {
-        $this->pdo->commit();
+        return $this->pdo->commit();
     }
 
     /**
@@ -1966,7 +1968,8 @@ class DbConnection
     public function rollBackTrans()
     {
         if ($this->pdo->inTransaction()) {
-            $this->pdo->rollBack();
+            return $this->pdo->rollBack();
         }
+        return true;
     }
 }
