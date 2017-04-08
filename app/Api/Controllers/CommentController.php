@@ -28,13 +28,10 @@ class CommentController extends BaseController
       $target_id = $request->input('target_id',null);
       $answer = $request->input('answer',null);
       $answername = $request->input('answername',null);
-      $content = $request->input('content',null);
+      $content = $request->input('content'," ");
       if ($target == null||$target_id == null) {
         $result = $this->returnMsg('500','request error');
         return response()->json($result);
-      }
-      if ($content == null ) {
-        $content = " ";
       }
       $input['target'] = $target;
       $input['target_id'] = $target_id;
