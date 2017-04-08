@@ -16,7 +16,7 @@ class CreateMokasTable extends Migration
         Schema::create('Mokas', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('moka')->comment('模特摩卡号');
-            $table->string('mokanum')->comment('摩卡序列号');
+            $table->string('mokaid')->comment('摩卡序列号');
             $table->integer('area')->nullable()->comment('分区');
             $table->integer('size')->comment('摩卡框架');
             $table->integer('imgnum')->comment('框架应有图片数量');

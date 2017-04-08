@@ -33,6 +33,7 @@ class BaseController extends Controller
           $arr['message'] = $name.' required';
           return response()->json($arr);
         }
+        return '200';
     }
     //计算身价
     public function value($id){

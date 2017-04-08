@@ -46,8 +46,11 @@ $api->version('v1', function ($api) {
         $api->post('deleorder', 'OrderController@delete');//finish
         // $api->get('moment', 'MomentController@moment');
         //制作摩卡
-        $api->post('makemoka', 'MokaController@start');
-        // $api->post('deleorder', 'OrderController@delete');//finish
+        $api->post('makemoka', 'MokaController@start');//finish
+        $api->post('delemoka', 'MokaController@delete');//finish
+        //ajax上传图片
+        $api->post('photo', 'PhotoController@update');//finish
+        $api->post('photodetail', 'PhotoController@detail');//finish
       });
     });
 });
