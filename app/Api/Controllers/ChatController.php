@@ -58,9 +58,14 @@ class ActivityController extends BaseController
 		$check = Redis::sadd('group_id:'.$room_id,$moka_id);//添加聊天室成员
 		if(!$check)
 			Log::warning('Create chatgroup fail, user moka_id:'.$user_message['moka']);
-		
 	}
 
+	public function checkUserLogin(Request $request)
+	{
+		$token = JWTAuth::getToken();
+		$user_json = JWTAuth::toUser($token);
+		return $user_json;
+	}
     //开启某个聊天或者加入群聊
     public function join(Request $request){
 
