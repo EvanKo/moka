@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Fan;
+use App\Friend;
 use App\Role;
 use JWTAuth;
 use DB;
@@ -38,6 +39,14 @@ class FanController extends BaseController
         DB::table('Roles')
           ->where('moka', $moka)
           ->update(['fans' => 'fans'-1]);
+        DB::table('Friends')
+          ->where('frienda',$moka)
+          ->where('friendb',$role['moka'])
+          ->delete();
+        DB::table('Friends')
+          ->where('friendb',$moka)
+          ->where('frienda',$role['moka'])
+          ->delete();
         $result = $this->returnMsg('200','disfollowed',$result);
         return response()->json($result);
       }
@@ -58,9 +67,32 @@ class FanController extends BaseController
         DB::table('Roles')
           ->where('moka', $moka)
           ->update(['fans' => 'fans'+1]);
+        if (FanController::friend($moka,$role['moka'])) {
+          $inputa['frienda'] = $moka;
+          $inputa['friendb'] = $role['moka'];
+          $inputb['friendb'] = $moka;
+          $inputb['frienda'] = $role['moka'];
+          Friend::create($inputa);
+          Friend::create($inputb);
+        }
         $result = $this->returnMsg('200','followed',$result);
         return response()->json($result);
       }
+    }
+    //判断两个人是否互相关注，设定为好友
+    protected function friend($a,$b){
+      $abouta = DB::table('Fans')
+        ->where('fan',$a)
+        ->where('idol',$b)
+        ->get();
+      $aboutb = DB::table('Fans')
+        ->where('idol',$a)
+        ->where('fan',$b)
+        ->get();
+      if ($aboutb->count() == 1 && $abouta->count() == 1) {
+        return true;
+      }
+      return false;
     }
     //关注列表
     public function idol(Request $request){

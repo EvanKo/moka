@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Moka;
+use App\Record;
 use JWTAuth;
 use DB;
 
@@ -65,6 +66,7 @@ class MokaController extends BaseController
       $input['moka'] = $role['moka'];
       $input['size'] = $size;
       $input['imgnum'] = $imgnum;
+      $input['area'] = $role['area'];
       $input['mokaid'] = $num;
       $result = Moka::create($input);
       $result = $this->returnMsg('200',"ok",$num);
@@ -74,7 +76,7 @@ class MokaController extends BaseController
     //删除或取消摩卡
     public function delete(Request $request){
       $role = JWTAuth::toUser();
-      $mokaid = $request->input('mokaid',null);
+      $mokaid = $request->input('id',null);
       if ( $this->returnReq($mokaid,'mokaid') != '200') {
         return $this->returnReq($mokaid,'mokaid');
       }
@@ -88,8 +90,50 @@ class MokaController extends BaseController
       DB::table('Mokas')
         ->where('mokaid',$mokaid)
         ->delete();
-      return 'ok';
+      $record = DB::table('Records')
+          ->where('target_id',$mokaid)
+          ->where('target',3)
+          ->delete();
+      $result = $this->returnMsg('200',"deleted");
+      return response()->json($result);
     }
+
+    //保存
+    public function save(Request $request){
+      $role = JWTAuth::toUser();
+      $id = $request->input('id',null);
+      if ( $this->returnReq($id,'id') != '200') {
+        return $this->returnReq($id,'id');
+      }
+      $moka = DB::table('Mokas')->where('id',$id)
+        ->select('imgnum','imgrealnum');
+      if ($moka->count() == 0) {
+        $result = $this->returnMsg('500','id error');
+        return response()->json($result);
+      }
+      $data = $moka->get();
+      $data = json_decode($data,true);
+      $data = $data[0];
+      if ($data['imgnum'] == $data['imgrealnum']) {
+        $result = DB::table('Mokas')->where('id',$id)
+        ->update(['finish' => 1]);
+        $result = Moka::find($id);
+        $result = json_decode($result,true);
+        $input['target_id'] = $result['id'];
+        $input['target'] = 3;
+        $input['moka'] = $role['moka'];
+        $input['area'] = $role['area'];
+        $result = Record::create($input);
+        $result = $this->returnMsg('200','saved');
+        return response()->json($result);
+      }
+      DB::table('Mokas')->where('id',$id)
+      ->update(['finish' => 0]);
+      $result = $this->returnMsg('500','photos num error');
+      return response()->json($result);
+    }
+
+
     protected static function deldir($dir) {
       //先删除目录下的文件：
       $dh=opendir($dir);

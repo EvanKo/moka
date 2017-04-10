@@ -63,7 +63,7 @@ class CommentController extends BaseController
       return response()->json($result);
     }
     //动态列表只显示前两条
-    public static function two($target,$targetid){
+    public static function two($target,$target_id){
       $query = 'select * from comments where target = \''.$target.'\' and target_id =\''.$target_id.'\' limit 0,2';
       $result = DB::select($query);
       return $result;

@@ -23,11 +23,12 @@ $api->version('v1', function ($api) {
         //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
+        $api->post('logout', 'LoginController@logout');//finish
         $api->post('checkmanager', 'LoginController@checkmanager');//finish tel
         //动态
         $api->post('makemoment', 'MomentController@make');//finish img,content
         $api->post('delemoment', 'MomentController@delete');//finish momentid
-        $api->get('moment', 'MomentController@moment');//finish momentid
+        $api->post('moment', 'CommonController@moment');//finish id
         //评论
         $api->post('makecomment', 'CommentController@make');//finish target,target_id,answer,answername,content
         $api->post('delecomment', 'CommentController@dele');//finish id
@@ -44,16 +45,21 @@ $api->version('v1', function ($api) {
         //订单
         $api->post('makeorder', 'OrderController@make');//finish price,type,img,content
         $api->post('deleorder', 'OrderController@delete');//finish id
-        // $api->get('moment', 'MomentController@moment');
+        $api->post('order', 'CommonController@order');//finish id
         //制作摩卡
         $api->post('makemoka', 'MokaController@start');//finish size,imgnum
-        $api->post('delemoka', 'MokaController@delete');//finish mokaid
+        $api->post('delemoka', 'MokaController@delete');//finish id
+        $api->post('savemoka', 'MokaController@save');//finish id
+        $api->post('moka', 'CommonController@moka');//finish id
         //ajax上传图片
-        $api->post('photo', 'PhotoController@update');//finish num,img
+        $api->post('mokaphoto', 'PhotoController@update');//finish num,img
         $api->post('photodetail', 'PhotoController@detail');//finish id
         //附近
+        $api->post('near', 'CommonController@near');//finish page,area
+        //好友
+        $api->post('friend', 'CommonController@friend');//finish page        
         //热门
-
+        //搜索
       });
     });
 });
