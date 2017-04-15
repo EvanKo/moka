@@ -17,7 +17,9 @@ $api->version('v1', function ($api) {
 
     $api->group(['namespace' => 'App\Api\Controllers'], function ($api) {
       $api->post('login', 'LoginController@login');//finish
-      $api->post('register', 'LoginController@register');
+	  $api->post('register', 'LoginController@register');
+
+	  $api->post('sendMsg', 'ChatController@sendMsg');
 
       $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
         //登录注册相关

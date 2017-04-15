@@ -18,7 +18,7 @@ use File;
 use Redis;
 use Log;
 
-class ActivityController extends BaseController
+class ChatController extends BaseController
 {
 
     public function __construct(){
@@ -30,14 +30,10 @@ class ActivityController extends BaseController
 		$user_message = JWTAuth::toUser();
 
 		$moka_id = $user_message['moka'];
-		
-		$records = Redis::members('unreadMsg:'.$moka_id);//unreadMsg:$moka_id 未读消息集合
-		if($records){ //$records 数据格式 from:来信用户或群聊id
-			$data = [];
-			for($records as $record){
-				$data[] = Redis::hgetall($record);
-			}
-			return $this->returnMsg('200','ok',$data);
+
+		$records = DB::table('ChatRecords')->where('to','=',$moka_id)->get();//unreadMsg:$moka_id 未读消息集合
+		if($records->count()){
+			return $this->returnMsg('200','ok',['MsgNum'=>$records->count(),'records'=>$records]);
 		}
 		else{
 			return $this->returnMsg('404','Unread message not found');
@@ -49,13 +45,13 @@ class ActivityController extends BaseController
 		$user_message = JWTAuth::toUser();
 		$moka_id = $user_message['moka'];
 		while(true){
-			$room_id = (time()%1000000).rand(100,1000);
-			$isExist = Redis::sismember('AllChatGroups',$room_id);
+			$group_id = (time()%1000000).rand(100,1000);
+			$isExist = Redis::sismember('AllChatGroups',$group_id);
 			if(!$isExist)
 				break;
 		}
-		Redis::sadd('AllChatGroups','group_id:'.$room_id);
-		$check = Redis::sadd('group_id:'.$room_id,$moka_id);//添加聊天室成员
+		Redis::sadd('AllChatGroups','group_id:'.$group_id);
+		$check = Redis::sadd('group_id:'.$group_id,$moka_id);//添加聊天室成员
 		if(!$check)
 			Log::warning('Create chatgroup fail, user moka_id:'.$user_message['moka']);
 	}
@@ -66,9 +62,42 @@ class ActivityController extends BaseController
 		$user_json = JWTAuth::toUser($token);
 		return $user_json;
 	}
-    //开启某个聊天或者加入群聊
-    public function join(Request $request){
+    //加入群聊
+	public function joinGroup(Request $request)
+	{
+		$group_id = $request->input('group_id');
+		$user_message = JWTAuth::toUser();
+		$moka_id = $user_message['moka'];
 
-    }
+		$check = Redis::sismember('AllChatGroups',$group_id);
+		if($check){
+			Redis::sadd('group_id:'.$group_id,$moka_id);
+			return $this->returnMsg('200','ok');
+		}
+		else return $this->returnMsg('404','Can not find the group');
+	}
+	//开启聊天
+	public function sendMsg(Request $request)
+	{
+		$type = 'privateChat';
+		$from = $request->input('from');
+		$fromName = $request->input('fromName');
+		$to = $request->input('to');
+		$toName = $request->input('toName');
+		$content = $request->input('content');
 
+		$message = ['type'=>$type,
+					'from'=>$from,
+					'fromName'=>$fromName,
+					'to'=>$to,
+					'toName'=>$toName,
+					'content'=>$content,
+					'time'=>date('Y-m-s H:i:s')];
+		// 建立连接，@see http://php.net/manual/zh/function.stream-socket-client.php
+		$client = stream_socket_client('tcp://127.0.0.1:7273', $errno, $errmsg, 1);
+		if(!$client)exit("can not connect");
+		// // 模拟超级用户，以文本协议发送数据，注意Text文本协议末尾有换行符（发送的数据中最好有能识别超级用户的字段），这样在Event.php中的onMessage方法中便能收到这个数据，然后做相应的处理即可
+		 fwrite($client,json_encode($message)."\n"); 
+		return $this->returnMsg('200','ok');
+	}
 }
