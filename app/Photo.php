@@ -13,5 +13,7 @@ class Photo extends Model
       ,'img_snum'
       ,'img_l'
       ,'img_lnum'
+      ,'fee'
+      ,'view'
       );
 }

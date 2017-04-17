@@ -137,6 +137,12 @@ class LoginController extends BaseController
       $result = $this->returnMsg('200',"ok",$result);
       return response()->json($result);
     }
+    //登出
+    public function logout(){
+      JWTAuth::refresh();
+      $result = $this->returnMsg('200',"logouted");
+      return response()->json($result);
+    }
     //查询
     public function checkmanager(){
       return JWTAuth::toUser();
@@ -145,6 +151,7 @@ class LoginController extends BaseController
     public function auth(){
 
     }
+
     //忘记密码
     public function forget(){
 

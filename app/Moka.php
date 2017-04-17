@@ -8,7 +8,7 @@ class Moka extends Model
 {
       protected $fillable = array(
         'moka'
-      ,'mokanum'
+      ,'mokaid'
       ,'area'
       ,'size'
       ,'imgnum'

@@ -14,7 +14,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Moment;
-use App\Role;
+use App\Record;
 use JWTAuth;
 
 class MomentController extends BaseController
@@ -46,6 +46,10 @@ class MomentController extends BaseController
       $input['moka'] = $moka;
       $input['area'] = $role['area'];
       $result = Moment::create($input);
+      $result = json_decode($result,true);
+      $input['target_id'] = $result['id'];
+      $input['target'] = 1;
+      $result = Record::create($input);
       $result = $this->returnMsg('200',"ok",$result);
       return response()->json($result);
     }
@@ -62,6 +66,10 @@ class MomentController extends BaseController
         $result = $this->returnMsg('500',"momentid error");
         return response()->json($result);
       }
+      $record = DB::table('Records')
+        ->where('target_id',$id)
+        ->where('target',1)
+        ->delete();
       $moka = $object['moka'];
       File::delete(public_path().'/photo/moment/'.$moka.'/'.$object['imgnum']);
       AppreciateController::deleall(1,$object['id']);
@@ -74,40 +82,7 @@ class MomentController extends BaseController
     public function my(){
 
     }
-    public static function self($id){
-      $role = DB::table('Roles')->where('moka',$id)
-        ->select('id','moka', 'name','head','sex','role'
-        ,'province','city')
-        ->get();
-      return $role;
-    }
-    //动态详情
-    public function moment(Request $request){
-      $id = $request->get('momentid',null);
-      if ($id == null) {
-        $result = $this->returnMsg('500','request error');
-        return response()->json($result);
-      }
-      $moment = DB::table('Moments')->where('id',$id)
-        ->select('id','moka','content','img','view','created_at');
-      if (!$moment) {
-        $result = $this->returnMsg('500','id error');
-        return response()->json($result);
-      }
-      // $moment = json_decode($moment,true);
-      // $moment = $moment[0];
-      $data = $moment->get();
-      $data = json_decode($data,true);
-      $data = $data[0];
-      $data['view'] += 1;
-      $moment->update(['view'=>$data['view']]);
-      $zan = AppreciateController::list(1,$id,10);
-      $result['zan'] = $zan;
-      $result['moment'] = $data;
-      $result['author'] = MomentController::self($data['moka']);
-      $result = $this->returnMsg('200','ok',$result);
-      return response()->json($result);
-    }
+
     //test
     public function test(Request $request){
       $id = JWTAuth::toUser();
