@@ -12,6 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Order;
+use App\Record;
 use JWTAuth;
 use DB;
 use File;
@@ -43,8 +44,13 @@ class OrderController extends BaseController
       $input = $request->all();
       $input['img'] = $_SERVER['HTTP_HOST'].$root2.$num;
       $input['imgnum'] = $num;
+      $input['area'] = $role['area'];
       $input['moka'] = $role['moka'];
       $result = Order::create($input);
+      $result = json_decode($result,true);
+      $input['target_id'] = $result['id'];
+      $input['target'] = 2;
+      $result = Record::create($input);
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
     }
@@ -57,6 +63,10 @@ class OrderController extends BaseController
         $result = $this->returnMsg('500','no permission');
         return response()->json($result);
       }
+      $record = DB::table('Records')
+        ->where('target_id',$id)
+        ->where('target',2)
+        ->delete();
       File::delete(public_path().'/photo/order/'.$object['moka'].'/'.$object['imgnum']);
       AppreciateController::deleall(2,$object['id']);
       CommentController::deleall(2,$object['id']);

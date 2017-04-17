@@ -18,8 +18,8 @@ class CreateFlowsTable extends Migration
             $table->integer('payer')->comment('支付者moka');
             $table->integer('earner')->comment('收入者moka');
             $table->longText('way')->comment('支付详情');
-            $table->integer('money')->comment('金额数');
-            $table->integer('income')->comment('公司收入费用');
+            $table->float('money')->comment('金额数');
+            $table->float('income')->comment('公司收入费用');
             $table->timestamps();
         });
     }

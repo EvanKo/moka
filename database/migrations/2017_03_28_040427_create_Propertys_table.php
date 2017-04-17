@@ -19,7 +19,7 @@ class CreatePropertysTable extends Migration
             $table->integer('member')->default(0)->comment('上次会员等级');
             $table->date('member_date')->nullable()->comment('上次会员起始时间');
             $table->integer('member_last')->default(0)->comment('上次会员起持续时间');
-            $table->integer('money')->default(0)->comment('账户剩余金币');
+            $table->float('money')->default(0)->comment('账户剩余金币');
             $table->timestamps();
         });
     }

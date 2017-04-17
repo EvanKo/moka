@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOrdersTable extends Migration
+class CreateListsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,13 @@ class CreateOrdersTable extends Migration
      */
     public function up()
     {
-        Schema::create('Orders', function (Blueprint $table) {
+        Schema::create('Records', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('moka')->comment('作者摩卡号');
             $table->integer('area')->nullable()->comment('分区');
-            $table->float('price')->comment('价格');
-            $table->integer('type')->comment('类型(固定)');
             $table->integer('view')->default(0)->comment('浏览量');
-            $table->string('content')->comment('内容');
-            $table->longText('img')->comment('图片网址');
-            $table->longText('imgnum')->comment('图片地址');
+            $table->integer('target')->comment('目标');
+            $table->integer('target_id')->comment('目标id');
             $table->timestamps();
         });
     }
@@ -34,6 +31,6 @@ class CreateOrdersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Orders');
+        Schema::dropIfExists(':Lists');
     }
 }
