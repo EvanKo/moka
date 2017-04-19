@@ -37,27 +37,40 @@ class LoginController extends BaseController
       $tel = $request->input('tel',null);
       $name = $request->input('name',null);
       $sex = $request->input('sex',null);
+      $num = $request->input('num',null);
       $password = $request->input('password',null);
-      if ($tel == null || $password == null || $name == null || $sex == null) {
+      if ($tel == null || $password == null || $name == null || $sex == null||$num ==null) {
           $result = $this->returnMsg('500',"INFORMATION ERROR");
           return response()->json($result);
       }
-      if (LoginController::phonecheck($tel)) {
-          $num = time()%100000;
-          $num = rand(1,9)*100000 + $num;
-          $input['tel']=$tel;
-          $input['password']=sha1($password);
-          $input['moka'] = $num;
-          $input['name'] = $name;
-          $input['sex'] = $sex;
-          $input['head'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
-          $input['lastest'] = date('y-m-d',time());
-          $result = Role::create($input);
-          $result = Property::create($input);
-          $result = $this->returnMsg('200',"ok",$result);
+      $num = 'k'.strval($num);
+      $value = Session::get($num, 'default');
+      if ($value != 'default') {
+        if ($value['tel'] == $tel) {
+          // return $input;
+          Session::forget($num);
+          if (LoginController::phonecheck($tel)) {
+              $mokanum = time()%100000;
+              $mokanum = rand(1,9)*100000 + $mokanum;
+              $input['tel'] = $tel;
+              $input['password']=sha1($password);
+              $input['moka'] = $mokanum;
+              $input['name'] = $name;
+              $input['sex'] = $sex;
+              $input['head'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
+              $input['lastest'] = date('y-m-d',time());
+              $result = Role::create($input);
+              $result = Property::create($input);
+              $result = $this->returnMsg('200',"ok",$result);
+              return response()->json($result);
+          }
+          $result = $this->returnMsg('500',"TEL HAVE EXISTED");
           return response()->json($result);
+        }
+        $result = $this->returnMsg('500','num error');
+        return response()->json($result);
       }
-      $result = $this->returnMsg('500',"TEL HAVE EXISTED");
+      $result = $this->returnMsg('500','num error');
       return response()->json($result);
     }
     //登陆
@@ -157,7 +170,56 @@ class LoginController extends BaseController
 
     }
     //短信
-    public function sess(){
+    public function message($num,$tel){
+    	$c = new TopClient();
+    	$c->appkey = "23553742";  //  App Key的值 这个在开发者控制台的应用管理点击你添加过的应用就有了
+    	$c->secretKey = "170f0500f220c2b61a95c2e9065a6670"; //App Secret的值也是在哪里一起的 你点击查看就有了
+    	$req = new AlibabaAliqinFcSmsNumSendRequest();
+    	$req->setExtend(""); //这个是用户名记录那个用户操作
+    	$req->setSmsType("normal"); //这个不用改你短信的话就默认这个就好了
+    	$req->setSmsFreeSignName("滴达"); //这个是签名
+    	$req->setSmsParam("{'code':'".$num."'}"); //这个是短信签名
+    	$req->setRecNum($tel); //这个是写手机号码
+    	$req->setSmsTemplateCode("SMS_32485128"); //这个是模版ID 主要也是短信内容
+        $resp = $c->execute($req);
+        $resp = json_encode($resp);
+        $resp = json_decode($resp);
+        if(isset($resp->result)){
+            if($resp->result->err_code == 0){
+                $result = $this->returnMsg('200','OK');
+    	        return response()->json($result);
+            }
+        }
+            $result = $this->returnMsg('52001',$resp);
+    	    return response()->json($result);
+    }
 
+    public function sessionSet(Request $request){
+      $time = strtotime(date('Y-m-d H:i:s',time()));//integer
+      $time = $time%10000;
+      $value = array ('lastip'=>$_SERVER['REMOTE_ADDR'],'tel'=>$request->input('tel'));
+      $num = 'k'.strval($time);
+      Session::put($num, $value);
+      // Session::flush();
+      // $data = Session::all();
+      // return $data;
+      $result=LoginController::message($time,$request['tel']);
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
+    }
+    public function check(Request $request){
+      $num = $request->input('num');
+      $num = 'k'.strval($num);
+      $value = Session::get($num, 'default');
+      // return $value;
+      if ($value != 'default') {
+
+          Session::forget($num);
+
+          $result = $this->returnMsg('200','ok',$value);
+          return response()->json(compact('result'));
+      }
+        $result = $this->returnMsg('52002','ERROR CODE');
+        return response()->json($result);
     }
 }

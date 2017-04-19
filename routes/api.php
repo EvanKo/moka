@@ -15,9 +15,11 @@ use Illuminate\Http\Request;
 $api = app('Dingo\Api\Routing\Router');
 $api->version('v1', function ($api) {
 
-    $api->group(['namespace' => 'App\Api\Controllers'], function ($api) {
+    $api->group(['middleware' => 'apiweb','namespace' => 'App\Api\Controllers'], function ($api) {
       $api->post('login', 'LoginController@login');//finish tel password
       $api->post('register', 'LoginController@register'); //tel,name,sex,password
+      $api->post('sms', 'LoginController@sessionSet'); //tel,name,sex,password
+      $api->post('check', 'LoginController@check'); //tel,name,sex,password
 
       $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
         //登录注册相关
@@ -57,8 +59,9 @@ $api->version('v1', function ($api) {
         //附近
         $api->post('near', 'CommonController@near');//finish page,area
         //好友
-        $api->post('friend', 'CommonController@friend');//finish page        
+        $api->post('friend', 'CommonController@friend');//finish page
         //热门
+        $api->post('hot', 'CommonController@hot');//finish page
         //搜索
       });
     });
