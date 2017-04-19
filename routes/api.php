@@ -15,18 +15,23 @@ use Illuminate\Http\Request;
 $api = app('Dingo\Api\Routing\Router');
 $api->version('v1', function ($api) {
 
-    $api->group(['namespace' => 'App\Api\Controllers'], function ($api) {
-	  $api->post('sendMsg', 'ChatController@sendMsg');
-      $api->post('login', 'LoginController@login');//finish tel password
-      $api->post('register', 'LoginController@register'); //tel,name,sex,password
+    	$api->group(['namespace' => 'App\Api\Controllers'], function ($api) {
+	  	
+      	$api->post('login', 'LoginController@login');//finish tel password
+      	$api->post('register', 'LoginController@register'); //tel,name,sex,password
 
-      $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
+      	$api->group(['middleware' => 'jwt.api.auth'], function ($api) {
         //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
         $api->post('logout', 'LoginController@logout');//finish
-        $api->post('checkmanager', 'LoginController@checkmanager');//finish tel
-        //动态
+		$api->post('checkmanager', 'LoginController@checkmanager');//finish tel
+		//聊天
+        $api->post('sendMsg', 'ChatModule\ChatController@sendMsg');
+		$api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
+		$api->post('newGroupChat', 'ChatController@newGroupChat');
+		$api->post('joinGroup', 'ChatController@joinGroup');
+		//动态
         $api->post('makemoment', 'MomentController@make');//finish img,content
         $api->post('delemoment', 'MomentController@delete');//finish momentid
         $api->post('moment', 'CommonController@moment');//finish id

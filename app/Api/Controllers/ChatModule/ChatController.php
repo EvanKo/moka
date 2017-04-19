@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers;
+namespace App\Api\Controllers\ChatModule;
 
 use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
@@ -27,7 +27,8 @@ class ChatController extends BaseController
 
 	public function checkMessage(Requests $request)
 	{
-		$user_message = JWTAuth::toUser();
+		$token = JWTAuth::getToken()
+		$user_message = JWTAuth::toUser($token);
 
 		$moka_id = $user_message['moka'];
 
@@ -42,7 +43,8 @@ class ChatController extends BaseController
 
 	public function newChatGroup(Request $request)
 	{
-		$user_message = JWTAuth::toUser();
+		$token = JWTAuth::getToken()
+		$user_message = JWTAuth::toUser($token);
 		$moka_id = $user_message['moka'];
 		while(true){
 			$group_id = (time()%1000000).rand(100,1000);
@@ -79,7 +81,7 @@ class ChatController extends BaseController
 	//开启聊天
 	public function sendMsg(Request $request)
 	{
-		$type = 'privateChat';
+		$type = $request->input('type');
 		$from = $request->input('from');
 		$fromName = $request->input('fromName');
 		$to = $request->input('to');
