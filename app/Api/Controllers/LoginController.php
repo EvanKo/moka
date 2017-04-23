@@ -222,4 +222,54 @@ class LoginController extends BaseController
         $result = $this->returnMsg('52002','ERROR CODE');
         return response()->json($result);
     }
+    //搜索
+    public function search(Request $request){
+      $key = $request->input('key',null);
+      $page = $request->input('page',1);
+      if ($key == null) {
+        $result = $this->returnMsg('500','request error');
+        return response()->json($result);
+      }
+      if (is_numeric($key)&&mb_strlen($key,'gb2312') == 6){
+        $result = DB::table('Roles')->where('moka',$key)
+        ->select('moka','name','province','city','head','sex')
+        ->skip(($page-1)*10)->limit(10)->get();
+        if ($result->count() == 0) {
+          $result = $this->returnMsg('200','not exited');
+          return response()->json($result);
+        }
+        $result = $this->returnMsg('200','ok',$result);
+        return response()->json($result);
+      }
+      $result = DB::table('Roles')->where('name','like',"%".$key."%")
+      ->select('moka','name','province','city','head','sex')
+      ->skip(($page-1)*10)->limit(10)->get();
+      if ($result->count() == 0) {
+        $result = $this->returnMsg('200','not exited');
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
+    }
+    //搜索
+    public function area(Request $request){
+      $key = $request->input('key',null);
+      $page = $request->input('page',1);
+      if ($key == null) {
+        $result = $this->returnMsg('500','request error');
+        return response()->json($result);
+      }
+      $area = DB::table('Area')->where('name','like',"%".$key."%")
+      ->pluck('sort');
+      $result = DB::table('Roles')->where('area',$area)
+      ->select('moka','name','province','city','head','sex')
+      ->skip(($page-1)*10)->limit(10)->get();
+      if ($result->count() == 0) {
+        $result = $this->returnMsg('200','not exited');
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
+    }
+
 }

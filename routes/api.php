@@ -63,6 +63,8 @@ $api->version('v1', function ($api) {
         //热门
         $api->post('hot', 'CommonController@hot');//finish page
         //搜索
+        $api->post('search', 'LoginController@search');//finish key,page
+        $api->post('area', 'LoginController@area');//finish page
       });
     });
 });
