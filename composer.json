@@ -11,7 +11,8 @@
         "laravelcollective/html": "^5.3",
 	    "dingo/api":"1.0.x@dev",
         "tymon/jwt-auth": "0.5.*",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "workerman/mysql": "^1.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
