@@ -133,7 +133,6 @@ class MokaController extends BaseController
       return response()->json($result);
     }
 
-
     protected static function deldir($dir) {
       //先删除目录下的文件：
       $dh=opendir($dir);

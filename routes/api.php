@@ -21,18 +21,19 @@ $api->version('v1', function ($api) {
       $api->post('sms', 'LoginController@sessionSet'); //tel,name,sex,password
       $api->post('check', 'LoginController@check'); //tel,name,sex,password
 
-      	$api->group(['middleware' => 'jwt.api.auth'], function ($api) {
+      $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
         //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
         $api->post('logout', 'LoginController@logout');//finish
-		$api->post('checkmanager', 'LoginController@checkmanager');//finish tel
-		//聊天
+		    $api->post('checkmanager', 'LoginController@checkmanager');//finish tel
+		    //聊天
         $api->post('sendMsg', 'ChatModule\ChatController@sendMsg');
-		$api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
-		$api->post('newGroupChat', 'ChatController@newGroupChat');
-		$api->post('joinGroup', 'ChatController@joinGroup');
-		//动态
+		    $api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
+		    $api->post('newGroupChat', 'ChatController@newGroupChat');
+		    $api->post('joinGroup', 'ChatController@joinGroup');
+		    //动态
+        $api->post('selfmoka', 'CommonController@selfmoka');//finish page
         $api->post('makemoment', 'MomentController@make');//finish img,content
         $api->post('delemoment', 'MomentController@delete');//finish momentid
         $api->post('moment', 'CommonController@moment');//finish id
@@ -54,6 +55,7 @@ $api->version('v1', function ($api) {
         $api->post('deleorder', 'OrderController@delete');//finish id
         $api->post('order', 'CommonController@order');//finish id
         //制作摩卡
+        $api->post('selfmoka', 'CommonController@selfmoka');//finish page
         $api->post('makemoka', 'MokaController@start');//finish size,imgnum
         $api->post('delemoka', 'MokaController@delete');//finish id
         $api->post('savemoka', 'MokaController@save');//finish id
@@ -70,6 +72,14 @@ $api->version('v1', function ($api) {
         //搜索
         $api->post('search', 'LoginController@search');//finish key,page
         $api->post('area', 'LoginController@area');//finish page
+        //活动
+        $api->post('makeactivity', 'ActivityController@make');//finish key,page
+        $api->post('deleactivity', 'ActivityController@delete');//finish key,page
+        $api->post('activity', 'CommonController@activity');//finish id
+        //认证
+        $api->post('authphoto', 'AuthController@photo');//finish img,choose
+        $api->post('auth', 'AuthController@update');//finish name,company,id
+
       });
     });
 });
