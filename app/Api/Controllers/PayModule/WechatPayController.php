@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 
 
-class PayController extends BaseController
+class WechatPayController extends BaseController
 {
     /**
      * The authentication guard that should be used.
@@ -55,7 +55,8 @@ class PayController extends BaseController
         $inputObj['out_trade_no']="1462118902".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
         
         $inputObj['spbill_create_ip']=$_SERVER['REMOTE_ADDR'];//APP和网页支付提交用户端ip
-        $inputObj['notify_url']="";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+		#待填
+        $inputObj['notify_url']="121.40.220.52/api/notify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
         $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
         $token = JWTAuth::getToken();
         $user_json = JWTAuth::toUser($token);

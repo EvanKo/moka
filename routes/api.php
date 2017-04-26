@@ -20,9 +20,14 @@ $api->version('v1', function ($api) {
       $api->post('register', 'LoginController@register'); //tel,name,sex,password
       $api->post('sms', 'LoginController@sessionSet'); //tel,name,sex,password
       $api->post('check', 'LoginController@check'); //tel,name,sex,password
-
+      //支付回调
+	  $api->any('notify', 'PayModule\WechatPayController@notify');
       	$api->group(['middleware' => 'jwt.api.auth'], function ($api) {
-        //登录注册相关
+		//微信支付
+		//购买会员
+		$api->post('buymember', 'PayModule\PayController@member');
+		$api->post('pay', 'PayModule\WechatPayController@unifiedOrder');
+	    //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
         $api->post('logout', 'LoginController@logout');//finish
