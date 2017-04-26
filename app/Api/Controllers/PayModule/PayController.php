@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers;
+namespace App\Api\Controllers\PayModule;
 
 use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
@@ -31,7 +31,21 @@ class ActivityController extends BaseController
 
     }
     //购买会员
-    public function member(Request $request){
+	public function member(Request $request)
+	{
+		$user_data = JWTAuth::toUser();
+		$input['moka'] = $user_data('moka');
+		$input['type'] = $request->input('type');
+		$input['amount'] = $request->input('amount');
+		$input['tel'] = $user_data['tel'];
+		$input['status'] = 0;
+		$input['name'] = $user_data['name'];
 
+		$result = DB::table('PayRecords')->insert($input);
+		if($result){
+			return $this->returnMsg('200','ok');
+		}else{ 
+			return $this->returnMsg('500','fail');
+		}
     }
 }

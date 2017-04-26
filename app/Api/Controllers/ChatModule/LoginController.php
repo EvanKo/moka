@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers\ChatModule;
+namespace App\Api\Controllers;
 use Log;
 use App\Api\Controllers\BaseController;
 use Illuminate\Support\Facades\Session;

@@ -1,9 +1,8 @@
 <?php
-namespace App\Api\GoModule\Controllers;
+namespace App\Api\Controllers\PayModule;
 
 use Log;
 use App\Api\Controllers\BaseController;
-use App\Http\Requests\checkDriverLocation;
 use App\Wechat;
 use Illuminate\Http\Request;
 use JWTAuth;
@@ -12,7 +11,6 @@ use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
-use App\OrderRecord;
 
 
 class PayController extends BaseController
@@ -27,29 +25,22 @@ class PayController extends BaseController
         parent::__construct();
 
     }
-
+	//回调函数
     public function notify(Request $request){
-		Log::info('Notify function message');
 		$msg = array();
-		$postStr = file_get_contents('php://input');
-		$msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
-		Log::info('msg:'.$msg['result_code']);
-		if($msg['result_code']=='SUCCESS'){
-		  $openid = $msg['openid']; 
-		  $user = Wechat::where('openid','=',$openid)->first();
-			//Log记录数据
-			Log::info('user openid:'.$openid);
-			Log::info('transaction_id:'.$msg['transaction_id']);//微信支付订单号
-			Log::info('total_fee:'.$msg['total_fee']);//金额
-			Log::info('time_end:'.$msg['time_end']);	//时间	
-			Log::info('userPhone:'.$user->tel);
-	 	  DB::table('order_records')->where(['userphone'=>$user->tel,'isAccept'=>'3'])
-			->update(['isAccept'=>'4']);
-			Redis::del('usecar:'.$user->tel);
+	    $postStr = file_get_contents('php://input');
+	    $msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+	    Log::info('msg:'.$msg['result_code']);
+	    if($msg['result_code']=='SUCCESS'){
+			//业务逻辑
+			$openid = $msg['openid'];
+			DB::beginTransaction();
+			DB::table('PayRecords')->where('openid','=',$openid)->update(['status'=>1]);
+			DB::commit();
+			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+		}else{
+			Log::warning('user'.$openid' fail to pay');
 		}
-		else{
-		Log::info('FAIL:'.$msg['openid'].'fail to pay');
-		} 
 	}	
 	
     public function unifiedOrder()
@@ -57,31 +48,22 @@ class PayController extends BaseController
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";    
         $inputObj=array();
 
-        $inputObj['appid']="wx95eaefe010f7c7e8";//微信支付分配的公众账号ID
-        $inputObj['mch_id']="1410843402";//微信支付分配的商户号
+        $inputObj['appid']="wxa99e4ef76debee57";//微信支付分配的公众账号ID
+        $inputObj['mch_id']="1462118902";//微信支付分配的商户号
         $inputObj['nonce_str']=$this->getNonceStr();//随机字符串，长度要求在32位以内
-        $inputObj['body']="滴达订单";//商品简单描述，该字段请按照规范传递
-        $inputObj['out_trade_no']="1410843402".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
+        $inputObj['body']="moka`订单";//商品简单描述，该字段请按照规范传递
+        $inputObj['out_trade_no']="1462118902".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
         
         $inputObj['spbill_create_ip']=$_SERVER['REMOTE_ADDR'];//APP和网页支付提交用户端ip
-        $inputObj['notify_url']="https://api.didame.com:8088/api/notify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+        $inputObj['notify_url']="";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
         $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
         $token = JWTAuth::getToken();
         $user_json = JWTAuth::toUser($token);
         $user = json_decode($user_json, true);
-        
-        $openid=$user['openid'];
-        $phone=$user['tel'];//用户手机号
-        $order=OrderRecord::where(['userphone'=>$phone,'isAccept'=>3])->first();
-	Log::info('user order num'.count($order));
-        if (count($order)>0) {
-            $price=$order->price;
-	    Log::info($phone.'->price:'.$order->price);
-        }
-        $inputObj['openid']=$openid;//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
-        //从数据库去出价格，返回
-	$price = round($price,2); //四舍五入
-	$amount = $price*100;
+		$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'status'=>0])->first();
+
+        $inputObj['openid'] = $orderInfo['openid'];//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
+		$amount = $orderInfo['amount']*100;
 	//$amount=100; //付款多少( /分）
         $inputObj['total_fee']=$amount;//订单总金额，单位为分
 
@@ -98,7 +80,7 @@ class PayController extends BaseController
         }
         $string = trim($buff, "&");
         //签名步骤二：在string后加入KEY
-        $string = $string. "&key="."didavtmer168didavtmer168didavtme";
+        $string = $string. "&key="."mokavtmer666mokavtmer666";
         //签名步骤三：MD5加密
         $string = md5($string);
         //签名步骤四：所有字符转为大写
