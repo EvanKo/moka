@@ -11,6 +11,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Role;
+use App\Figure;
 use App\Property;
 use JWTAuth;
 use TopClient;
@@ -109,7 +110,27 @@ class LoginController extends BaseController
     }
     //上传资料
     public function update(){
-
+      
+    }
+    //上传头像
+    public function bgUpdate(Request $request){
+      $root = JWTAuth::toUser();
+      $id = $root['id'];
+      $moka = $root['moka'];
+      $file = $request->file('img',null);
+      if ($file == null) {
+        $result = $this->returnMsg('500',"IMG NOT UPLOAD");
+        return response()->json($result);
+      }
+      File::delete(public_path().'/photo/bgimg/'.$moka.'.jpg');
+      File::delete(public_path().'/photo/bgimg/'.$moka.'.jpeg');
+      File::delete(public_path().'/photo/bgimg/'.$moka.'.png');
+      $file->move( public_path().'/photo/bgimg/',$moka.".".$file->getClientOriginalExtension());
+      $object = Role::find($id);
+      $input['bgimg'] = $_SERVER['HTTP_HOST']."/photo/bgimg/".$moka.".".$file->getClientOriginalExtension();
+      $result = $object->update($input);
+      $result = $this->returnMsg('200',"ok",$result);
+      return response()->json($result);
     }
     //上传头像
     public function headUpdate(Request $request){
@@ -160,10 +181,7 @@ class LoginController extends BaseController
     public function checkmanager(){
       return JWTAuth::toUser();
     }
-    //认证
-    public function auth(){
 
-    }
 
     //忘记密码
     public function forget(){
@@ -270,6 +288,44 @@ class LoginController extends BaseController
       }
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
+    }
+    //模特身材
+    public function body(Request $request){
+      $role = JWTAuth::toUser();
+      $model = $role['role'];
+      if ($model != '1') {
+        $result = $this->returnMsg('500','not model');
+        return response()->json($result);
+      }
+      $isset = DB::table('Figures')->where('moka',$role['moka']);
+      if ($isset->get()->count() == 0) {
+        $this->validate($request, [
+          'height' => 'required|Numeric',
+          'weight' => 'required|Numeric',
+          'hips' => 'required|Numeric',
+          'bust' => 'required|Numeric',
+          'waist' => 'required|Numeric',
+          'shoe' => 'required|Numeric',
+        ]);
+        $data = $request->all();
+        $data['moka'] = $role['moka'];
+        $result = Figure::create($data);
+        $result = $this->returnMsg('200','ok',$result);
+        return response()->json($result);
+      }
+      $this->validate($request, [
+        'height' => 'Numeric',
+        'weight' => 'Numeric',
+        'hips' => 'Numeric',
+        'bust' => 'Numeric',
+        'waist' => 'Numeric',
+        'shoe' => 'Numeric',
+      ]);
+      $result = $isset
+        ->update($request->all());
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
+
     }
 
 }

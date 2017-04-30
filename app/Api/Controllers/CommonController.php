@@ -145,59 +145,35 @@ class CommonController extends BaseController
         ->update(['view'=>$data['view']]);
       $zan = AppreciateController::list(4,$id,10);
       $result['zan'] = $zan;
-      $result['activity'] = $data;
+      $result['activity '] = $data;
       $result['author'] = CommonController::self($data['moka']);
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
     }
 
-    //个人摩卡
-    public function selfmoka(Request $request){
-      $role = JWTAuth::toUser();
-      $page = $request->input('page',1);
-      $moka = $role['moka'];
-      $record = DB::table('Records')
-        ->where('moka',$moka)
-        ->orderBy('id','desc')
-        ->skip(($page-1)*10)
-        ->limit(10)
-        ->get();
-      $flows = json_decode($record,true);
-    $num = 0;
-      if ($record->count() == 0) {
-        $result = $this->returnMsg('200','bottum');
+    //个人纪录
+    public function selfrecord(Request $request){
+        $role = JWTAuth::toUser();
+        $page = $request->input('page',1);
+        $record = DB::table('Records')
+          ->where('moka',$role['moka'])
+          ->orderBy('id','desc')
+          ->skip(($page-1)*10)
+          ->limit(10)
+          ->get();
+        $flows = json_decode($record,true);
+      $num = 0;
+        if ($record->count() == 0) {
+          $result = $this->returnMsg('200','bottum');
+          return response()->json($result);
+        }
+       foreach ($flows as $key ) {
+            $row[$num++] = CommonController::detail($key['target'],$key['target_id']);
+        }
+        $result = $this->returnMsg('200','ok',$row);
         return response()->json($result);
-      }
-     foreach ($flows as $key ) {
-          $row[$num++] = CommonController::detail($key['target'],$key['target_id']);
-      }
-      $result = $this->returnMsg('200','ok',$row);
-      return response()->json($result);
     }
 
-    //个人动态
-    public function selfmoment(Request $request){
-      $role = JWTAuth::toUser();
-      $page = $request->input('page',1);
-      $moka = $role['moka'];
-      $record = DB::table('Records')
-        ->where('moka',$moka)
-        ->orderBy('id','desc')
-        ->skip(($page-1)*10)
-        ->limit(10)
-        ->get();
-      $flows = json_decode($record,true);
-    $num = 0;
-      if ($record->count() == 0) {
-        $result = $this->returnMsg('200','bottum');
-        return response()->json($result);
-      }
-     foreach ($flows as $key ) {
-          $row[$num++] = CommonController::detail($key['target'],$key['target_id']);
-      }
-      $result = $this->returnMsg('200','ok',$row);
-      return response()->json($result);
-    }
 
 
     //附近

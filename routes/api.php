@@ -25,6 +25,8 @@ $api->version('v1', function ($api) {
         //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
+        $api->post('bg', 'LoginController@bgUpdate');//finish img
+        $api->post('body', 'LoginController@body');//finish height,weight,bust,waist,hips,shoe,exp
         $api->post('logout', 'LoginController@logout');//finish
 		    $api->post('checkmanager', 'LoginController@checkmanager');//finish tel
 		    //聊天
@@ -33,7 +35,6 @@ $api->version('v1', function ($api) {
 		    $api->post('newGroupChat', 'ChatController@newGroupChat');
 		    $api->post('joinGroup', 'ChatController@joinGroup');
 		    //动态
-        $api->post('selfmoka', 'CommonController@selfmoka');//finish page
         $api->post('makemoment', 'MomentController@make');//finish img,content
         $api->post('delemoment', 'MomentController@delete');//finish momentid
         $api->post('moment', 'CommonController@moment');//finish id
@@ -49,13 +50,13 @@ $api->version('v1', function ($api) {
         $api->post('idols', 'FanController@idol');//finish page
         $api->post('fans', 'FanController@fan');//finish page
         //主页
-        $api->post('person', 'MainpageController@main');
+        $api->post('person', 'MainpageController@main');//finish
+        $api->post('selfrecord', 'CommonController@selfrecord');//finish page
         //订单
         $api->post('makeorder', 'OrderController@make');//finish price,type,img,content
         $api->post('deleorder', 'OrderController@delete');//finish id
         $api->post('order', 'CommonController@order');//finish id
         //制作摩卡
-        $api->post('selfmoka', 'CommonController@selfmoka');//finish page
         $api->post('makemoka', 'MokaController@start');//finish size,imgnum
         $api->post('delemoka', 'MokaController@delete');//finish id
         $api->post('savemoka', 'MokaController@save');//finish id
@@ -75,11 +76,13 @@ $api->version('v1', function ($api) {
         //活动
         $api->post('makeactivity', 'ActivityController@make');//finish key,page
         $api->post('deleactivity', 'ActivityController@delete');//finish key,page
+        $api->post('areaactivity', 'ActivityController@areaactivity');//finish key,page
         $api->post('activity', 'CommonController@activity');//finish id
         //认证
         $api->post('authphoto', 'AuthController@photo');//finish img,choose
         $api->post('auth', 'AuthController@update');//finish name,company,id
-
+        //举报
+        $api->post('report', 'ReportController@report');//finish content
       });
     });
 });

@@ -5,6 +5,7 @@ namespace App\Api\Controllers;
 use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
 use App\Api\Controllers\CommentController;
+use App\Api\Controllers\CommonController;
 use Illuminate\Support\Facades\Session;
 use Curl\Curl;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class ActivityController extends BaseController
     public function __construct(){
         parent::__construct();
     }
+
     //发活动
     public function make(Request $request){
       $img = $request->file('img',null);
@@ -41,6 +43,7 @@ class ActivityController extends BaseController
       }
       $input['content'] = $content;
       $input['moka'] = $moka;
+      // $input['pass'] = '1';
       $input['area'] = $role['area'];
       $result = Activity::create($input);
       // $result = json_decode($result,true);
@@ -63,10 +66,6 @@ class ActivityController extends BaseController
         $result = $this->returnMsg('500',"momentid error");
         return response()->json($result);
       }
-      $record = DB::table('Records')
-        ->where('target_id',$id)
-        ->where('target',4)
-        ->delete();
       $num = $object['img'];
       if ($num != '') {
         $num = trim($num,$_SERVER['HTTP_HOST']);
@@ -79,4 +78,31 @@ class ActivityController extends BaseController
       return response()->json($result);
     }
 
+    //地区活动
+    public function areaactivity(Request $request){
+        $role = JWTAuth::toUser();
+        $area = $role['area'] == null ? 1:$role['area'];
+        $page = $request->input('page',1);
+        $area = $request->input('area',$area);
+        $record = DB::table('Activities')
+          ->where('area',$area)
+          // ->where('pass','1')
+          ->orderBy('id','desc')
+          ->skip(($page-1)*10)
+          ->limit(10)
+          ->select('img','area','content','moka')
+          ->get();
+        $flows = json_decode($record,true);
+        $num = 0;
+        if ($record->count() == 0) {
+          $result = $this->returnMsg('200','bottum');
+          return response()->json($result);
+        }
+        foreach ($flows as $key ) {
+             $row[$num]['data'] = $key;
+             $row[$num++]['author'] = CommonController::self($key['moka']);
+         }
+        $result = $this->returnMsg('200','ok',$row);
+        return response()->json($result);
+    }
 }
