@@ -14,6 +14,7 @@ use App\Http\Requests;
 use App\Order;
 use App\Moment;
 use App\Moka;
+use App\Activity;
 use JWTAuth;
 use DB;
 
@@ -121,6 +122,60 @@ class CommonController extends BaseController
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
     }
+    //活动详情
+    public function activity(Request $request){
+      $id = $request->input('id',null);
+      if ($id == null) {
+        $result = $this->returnMsg('500','request error');
+        return response()->json($result);
+      }
+      $activity = DB::table('Activities')->where('id',$id)
+        ->select('id','moka','content','img','view','created_at');
+      if ($activity->count() == 0) {
+        $result = $this->returnMsg('500','id error');
+        return response()->json($result);
+      }
+      $data = $activity->get();
+      $data = json_decode($data,true);
+      $data = $data[0];
+      $data['view'] += 1;
+      $activity->update(['view'=>$data['view']]);
+      DB::table('Records')->where('target_id',$id)
+        ->where('target',4)
+        ->update(['view'=>$data['view']]);
+      $zan = AppreciateController::list(4,$id,10);
+      $result['zan'] = $zan;
+      $result['activity '] = $data;
+      $result['author'] = CommonController::self($data['moka']);
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
+    }
+
+    //个人纪录
+    public function selfrecord(Request $request){
+        $role = JWTAuth::toUser();
+        $page = $request->input('page',1);
+        $record = DB::table('Records')
+          ->where('moka',$role['moka'])
+          ->orderBy('id','desc')
+          ->skip(($page-1)*10)
+          ->limit(10)
+          ->get();
+        $flows = json_decode($record,true);
+      $num = 0;
+        if ($record->count() == 0) {
+          $result = $this->returnMsg('200','bottum');
+          return response()->json($result);
+        }
+       foreach ($flows as $key ) {
+            $row[$num++] = CommonController::detail($key['target'],$key['target_id']);
+        }
+        $result = $this->returnMsg('200','ok',$row);
+        return response()->json($result);
+    }
+
+
+
     //附近
     public function near(Request $request){
         $role = JWTAuth::toUser();

@@ -13,14 +13,14 @@ class CreateAuthesTable extends Migration
      */
     public function up()
     {
-        Schema::create('Authes', function (Blueprint $table) {
+        Schema::create('Auths', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('moka')->unique()->comment('唯一身份');
-            $table->string('authentication_name')->unique()->comment('认证姓名');
-            $table->string('authentication')->comment('认证机构');
-            $table->string('identification')->unique()->comment('身份证');
-            $table->string('identification_img')->comment('手持身份证照片地址');
-            $table->string('bussiness_img')->comment('营业执照照片地址');
+            $table->string('authentication_name')->nullable()->unique()->comment('认证姓名');
+            $table->string('authentication')->nullable()->comment('认证机构');
+            $table->string('identification')->nullable()->unique()->comment('身份证');
+            $table->string('identification_img')->nullable()->comment('手持身份证照片地址');
+            $table->string('bussiness_img')->nullable()->comment('营业执照照片地址');
             $table->timestamps();
         });
     }

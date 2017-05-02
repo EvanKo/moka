@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Api\Controllers\PayModule;
+namespace App\Api\Controllers\Paymodule;
 
 use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
