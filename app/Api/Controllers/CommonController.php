@@ -164,7 +164,7 @@ class CommonController extends BaseController
         $flows = json_decode($record,true);
       $num = 0;
         if ($record->count() == 0) {
-          $result = $this->returnMsg('200','bottum');
+          $result = $this->returnMsg('200','bottom');
           return response()->json($result);
         }
        foreach ($flows as $key ) {
@@ -191,7 +191,7 @@ class CommonController extends BaseController
         $flows = json_decode($record,true);
       $num = 0;
         if ($record->count() == 0) {
-          $result = $this->returnMsg('200','bottum');
+          $result = $this->returnMsg('200','bottom');
           return response()->json($result);
         }
        foreach ($flows as $key ) {
@@ -217,7 +217,7 @@ class CommonController extends BaseController
       $flows = json_decode($record,true);
       $num = 0;
       if ($record->count() == 0) {
-        $result = $this->returnMsg('200','bottum');
+        $result = $this->returnMsg('200','bottom');
         return response()->json($result);
       }
      foreach ($flows as $key ) {
@@ -239,7 +239,7 @@ class CommonController extends BaseController
       $flows = json_decode($record,true);
       $num = 0;
       if ($record->count() == 0) {
-        $result = $this->returnMsg('200','bottum');
+        $result = $this->returnMsg('200','bottom');
         return response()->json($result);
       }
      foreach ($flows as $key ) {

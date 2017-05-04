@@ -22,7 +22,10 @@ class ReportController extends BaseController
     //举报
     public function report(Request $request){
       $role = JWTAuth::toUser();
-      $input['content'] = $request->input('content',null);
+      $this->validate($request,[
+        'content'=>'required'
+      ]);
+      $input['content'] = $request->input('content');
       $input['moka'] = $role['moka'];
       $result = Report::create($input);
       $result = $this->returnMsg('200',"ok",$result);

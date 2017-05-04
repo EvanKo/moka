@@ -61,8 +61,11 @@ class MomentController extends BaseController
         $result = $this->returnMsg('500',"momentid require");
         return response()->json($result);
       }
-      $object = Moment::find($id);
-      if (!$object) {
+      $first = $record = DB::table('Moments')
+        ->where('id',$id)
+        ->where('moka',$role['moka']);
+      $object = $first->get();
+      if ($object->count() == 0) {
         $result = $this->returnMsg('500',"momentid error");
         return response()->json($result);
       }
@@ -70,11 +73,13 @@ class MomentController extends BaseController
         ->where('target_id',$id)
         ->where('target',1)
         ->delete();
+      $object = json_decode($object,true);
+      $object = $object[0];
       $moka = $object['moka'];
       File::delete(public_path().'/photo/moment/'.$moka.'/'.$object['imgnum']);
       AppreciateController::deleall(1,$object['id']);
       CommentController::deleall(1,$object['id']);
-      $result =  $object->delete();
+      $result =  $first->delete();
       $result = $this->returnMsg('200',"ok",$result);
       return response()->json($result);
     }

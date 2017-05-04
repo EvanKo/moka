@@ -27,8 +27,14 @@ class ActivityController extends BaseController
 
     //发活动
     public function make(Request $request){
+      $this->validate($request, [
+        'img' => 'Image',
+        'title' => 'required',
+        'content' => 'required'
+      ]);
       $img = $request->file('img',null);
       $content = $request->input('content',null);
+      $title = $request->input('title',null);
       $role = JWTAuth::toUser();
       $moka = $role['moka'];
       if ($img != null) {
@@ -43,6 +49,7 @@ class ActivityController extends BaseController
       }
       $input['content'] = $content;
       $input['moka'] = $moka;
+      $input['title'] = $title;
       // $input['pass'] = '1';
       $input['area'] = $role['area'];
       $result = Activity::create($input);
@@ -58,14 +65,23 @@ class ActivityController extends BaseController
       $role = JWTAuth::toUser();
       $id = $request->input('id',null);
       if ($id == null) {
-        $result = $this->returnMsg('500',"momentid require");
+        $result = $this->returnMsg('500',"id require");
         return response()->json($result);
       }
-      $object = Activity::find($id);
-      if (!$object) {
-        $result = $this->returnMsg('500',"momentid error");
+      $first = $record = DB::table('Activities')
+        ->where('id',$id)
+        ->where('moka',$role['moka']);
+      $object = $first->get();
+      if ($object->count() == 0) {
+        $result = $this->returnMsg('500',"id error");
         return response()->json($result);
       }
+      // $record = DB::table('Records')
+      //   ->where('target_id',$id)
+      //   ->where('target',4)
+      //   ->delete();
+      $object = json_decode($object,true);
+      $object = $object[0];
       $num = $object['img'];
       if ($num != '') {
         $num = trim($num,$_SERVER['HTTP_HOST']);
@@ -73,7 +89,7 @@ class ActivityController extends BaseController
       }
       AppreciateController::deleall(4,$object['id']);
       CommentController::deleall(4,$object['id']);
-      $result =  $object->delete();
+      $result =  $first->delete();
       $result = $this->returnMsg('200',"ok",$result);
       return response()->json($result);
     }

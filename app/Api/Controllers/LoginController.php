@@ -110,7 +110,7 @@ class LoginController extends BaseController
     }
     //上传资料
     public function update(){
-      
+
     }
     //上传头像
     public function bgUpdate(Request $request){
@@ -179,7 +179,9 @@ class LoginController extends BaseController
     }
     //查询
     public function checkmanager(){
-      return JWTAuth::toUser();
+      $result = JWTAuth::toUser();
+      $result = $this->returnMsg('200',"ok",$result);
+      return response()->json($result);
     }
 
 
@@ -281,6 +283,7 @@ class LoginController extends BaseController
       ->pluck('sort');
       $result = DB::table('Roles')->where('area',$area)
       ->select('moka','name','province','city','head','sex')
+      ->orderBy('id','desc')
       ->skip(($page-1)*10)->limit(10)->get();
       if ($result->count() == 0) {
         $result = $this->returnMsg('200','not exited');
