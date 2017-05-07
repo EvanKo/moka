@@ -27,7 +27,7 @@ $api->version('v1', function ($api) {
 	  $api->any('advanceMembernotify', 'PayModule\WechatPayController@advancemembernotify');
 	  $api->any('supermeMembernotify', 'PayModule\WechatPayController@supermemembernotify');
 	  $api->any('ordernotify', 'PayModule\WechatPayController@ordernotify');
-      	$api->group(['middleware' => 'jwt.api.auth'], function ($api) {
+      $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
 		//充值
 		$api->post('recharge','PayModule\PayController@recharge');
 		//打赏目标
@@ -36,7 +36,7 @@ $api->version('v1', function ($api) {
 		$api->post('buymember', 'PayModule\PayController@member');
 		//微信支付
 		$api->post('pay', 'PayModule\WechatPayController@unifiedOrder');
-        //登录注册相关
+       //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
         $api->post('bg', 'LoginController@bgUpdate');//finish img

@@ -110,7 +110,7 @@ class LoginController extends BaseController
     }
     //上传资料
     public function update(){
-      
+
     }
     //上传头像
     public function bgUpdate(Request $request){
@@ -179,13 +179,38 @@ class LoginController extends BaseController
     }
     //查询
     public function checkmanager(){
-      return JWTAuth::toUser();
+      $result = JWTAuth::toUser();
+      $result = $this->returnMsg('200',"ok",$result);
+      return response()->json($result);
     }
 
 
     //忘记密码
-    public function forget(){
-
+    public function forget(Request $request){
+      $tel = $request->input('tel',null);
+      $num = $request->input('num',null);
+      $password = $request->input('password',null);
+      if ($tel == null || $password == null ||$num ==null) {
+          $result = $this->returnMsg('500',"INFORMATION ERROR");
+          return response()->json($result);
+      }
+      $num = 'k'.strval($num);
+      $value = Session::get($num, 'default');
+      if ($value != 'default') {
+        if ($value['tel'] == $tel) {
+          // return $input;
+          Session::forget($num);
+          $input['password']=sha1($password);
+          $result = DB::table('Roles')->where('tel',$tel)
+            ->update($input);
+          $result = $this->returnMsg('200',"ok",$result);
+          return response()->json($result);
+        }
+        $result = $this->returnMsg('500','num error');
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('500','num error');
+      return response()->json($result);
     }
     //短信
     public function message($num,$tel){
@@ -204,12 +229,10 @@ class LoginController extends BaseController
         $resp = json_decode($resp);
         if(isset($resp->result)){
             if($resp->result->err_code == 0){
-                $result = $this->returnMsg('200','OK');
-    	        return response()->json($result);
+    	        return 'ok';
             }
         }
-            $result = $this->returnMsg('52001',$resp);
-    	    return response()->json($result);
+    	    return $resp;
     }
 
     public function sessionSet(Request $request){
@@ -281,9 +304,10 @@ class LoginController extends BaseController
       ->pluck('sort');
       $result = DB::table('Roles')->where('area',$area)
       ->select('moka','name','province','city','head','sex')
+      ->orderBy('id','desc')
       ->skip(($page-1)*10)->limit(10)->get();
       if ($result->count() == 0) {
-        $result = $this->returnMsg('200','not exited');
+        $result = $this->returnMsg('200','bottom');
         return response()->json($result);
       }
       $result = $this->returnMsg('200','ok',$result);

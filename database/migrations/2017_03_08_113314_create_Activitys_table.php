@@ -18,6 +18,7 @@ class CreateActivitysTable extends Migration
             $table->integer('moka')->comment('作者摩卡号');
             $table->integer('area')->nullable()->comment('分区');
             $table->longText('content')->comment('内容');
+            $table->string('title')->comment('题目');
             $table->string('img')->nullable()->comment('图片地址(仅一张)');
             $table->integer('view')->default(0)->comment('访问量');
             $table->integer('pass')->default(0)->comment('审核');

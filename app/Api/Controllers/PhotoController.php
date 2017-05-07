@@ -42,7 +42,7 @@ class PhotoController extends BaseController
     //上传图片
     public function update(Request $request){
       $role = JWTAuth::toUser();
-      $mokaid = $request->input('mokaid',null);
+      $mokaid = $request->input('mokanum',null);
       $img = $request->file('img',null);
       $num = $request->input('num',null);
       if ( $this->returnReq($num,'num') != '200') {
@@ -51,8 +51,8 @@ class PhotoController extends BaseController
       if ( $this->returnReq($img,'img') != '200') {
         return $this->returnReq($img,'img');
       }
-      if ( $this->returnReq($mokaid,'mokaid') != '200') {
-        return $this->returnReq($mokaid,'mokaid');
+      if ( $this->returnReq($mokaid,'mokanum') != '200') {
+        return $this->returnReq($mokaid,'mokanum');
       }
       $root = public_path().'/photo/moka/'.$mokaid.'/';
       if(!file_exists($root)){
