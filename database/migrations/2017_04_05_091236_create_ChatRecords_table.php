@@ -31,6 +31,6 @@ class CreateChatRecordsTable extends Migration
      */
     public function down()
     {
-		Scheme::drop('ChatRecords');
+		Schema::drop('ChatRecords');
     }
 }

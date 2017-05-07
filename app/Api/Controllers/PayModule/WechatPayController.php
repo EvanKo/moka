@@ -25,8 +25,8 @@ class WechatPayController extends BaseController
         parent::__construct();
 
     }
-	//回调函数
-    public function notify(Request $request){
+	//购买普通会员回调函数
+    public function normalmembernotify(Request $request){
 		$msg = array();
 	    $postStr = file_get_contents('php://input');
 	    $msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
@@ -35,33 +35,117 @@ class WechatPayController extends BaseController
 			//业务逻辑
 			$openid = $msg['openid'];
 			DB::beginTransaction();
-			DB::table('PayRecords')->where('openid','=',$openid)->update(['status'=>1]);
+			$orderinfo = DB::table('PayRecords')->where(['openid'=>$openid,'type'=>1,'status'=>0])
+						->first();
+			DB::table('Roles')->where('moka','=',$orderinfo->moka)->update(['level'=>1]);
+			//DB::table('PayRecords')->where('openid','=',$openid)->update(['status'=>1]);
+			$orderinfo->update(['status'=>1]);
 			DB::commit();
 			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
 		}else{
-			Log::warning('user'.$openid' fail to pay');
+			Log::warning('user'.$openid.' fail to pay');
+		}
+	}
+	//购买高级会员回调函数
+    public function advancemembernotify(Request $request){
+		$msg = array();
+	    $postStr = file_get_contents('php://input');
+	    $msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+	    Log::info('msg:'.$msg['result_code']);
+	    if($msg['result_code']=='SUCCESS'){
+			//业务逻辑
+			$openid = $msg['openid'];
+			DB::beginTransaction();
+			$orderinfo = DB::table('PayRecords')->where(['openid'=>$openid,'type'=>2,'status'=>0])
+						->first();
+			DB::table('Roles')->where('moka','=',$orderinfo->moka)->update(['level'=>2]);
+			$orderinfo->update(['status'=>1]);
+			DB::commit();
+			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+		}else{
+			Log::warning('user'.$openid.' fail to pay');
 		}
 	}	
+	//购买至尊会员回调函数
+    public function supermemembernotify(Request $request){
+		$msg = array();
+	    $postStr = file_get_contents('php://input');
+	    $msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+	    Log::info('msg:'.$msg['result_code']);
+	    if($msg['result_code']=='SUCCESS'){
+			//业务逻辑
+			$openid = $msg['openid'];
+			DB::beginTransaction();
+			$orderinfo = DB::table('PayRecords')->where(['openid'=>$openid,'type'=>3,'status'=>0])
+						->first();
+			DB::table('Roles')->where('moka','=',$orderinfo->moka)->update(['level'=>3]);
+			$orderinfo->update(['status'=>1]);
+			DB::commit();
+			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+		}else{
+			Log::warning('user'.$openid.' fail to pay');
+		}
+	}	
+	//支付订单回调函数
+    public function ordernotify(Request $request){
+		$msg = array();
+	    $postStr = file_get_contents('php://input');
+	    $msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+	    Log::info('msg:'.$msg['result_code']);
+	    if($msg['result_code']=='SUCCESS'){
+			//业务逻辑
+			$openid = $msg['openid'];
+			DB::beginTransaction();
+			$orderinfo = DB::table('PayRecords')->where(['openid'=>$openid,'type'=>4,'status'=>0])
+						->first();
+			$touser = DB::table('Roles')->where('moka','=',$orderinfo->tomoka)->first();
+			$money = $touser->money;
+			$touser->update(['money'=>$money+$orderinfo->amount]);
+			$orderinfo->update(['status'=>1]);
+			DB::commit();
+			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+		}else{
+			Log::warning('user'.$openid.' fail to pay');
+		}
+	}	
+		
 	
-    public function unifiedOrder()
-    {
-        $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";    
-        $inputObj=array();
+    public function unifiedOrder(Request $request)
+	{
+		$type = $request->input('type');
 
-        $inputObj['appid']="wxa99e4ef76debee57";//微信支付分配的公众账号ID
-        $inputObj['mch_id']="1462118902";//微信支付分配的商户号
-        $inputObj['nonce_str']=$this->getNonceStr();//随机字符串，长度要求在32位以内
-        $inputObj['body']="moka`订单";//商品简单描述，该字段请按照规范传递
-        $inputObj['out_trade_no']="1462118902".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
-        
-        $inputObj['spbill_create_ip']=$_SERVER['REMOTE_ADDR'];//APP和网页支付提交用户端ip
-		#待填
-        $inputObj['notify_url']="121.40.220.52/api/notify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
-        $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
-        $token = JWTAuth::getToken();
+        $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
+        $server_url = "121.40.220.52:8760";    
+
+        $inputObj=array();
+        $inputObj['appid'] = "wxa99e4ef76debee57";//微信支付分配的公众账号ID
+        $inputObj['mch_id'] = "1462118902";//微信支付分配的商户号
+        $inputObj['nonce_str'] = $this->getNonceStr();//随机字符串，长度要求在32位以内
+        $inputObj['body'] = "moka`订单";//商品简单描述，该字段请按照规范传递
+        $inputObj['out_trade_no'] = "1462118902".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
+        $inputObj['spbill_create_ip'] = $_SERVER['REMOTE_ADDR'];//APP和网页支付提交用户端ip
+
+		//从token获取用户信息
+		$token = JWTAuth::getToken();
         $user_json = JWTAuth::toUser($token);
         $user = json_decode($user_json, true);
-		$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'status'=>0])->first();
+		//约定1为购买普通会员，2为高级会员,3为至尊会员,4为支付订单
+		switch($type){
+		case 1:
+        	$inputObj['notify_url']=$server_url."/api/nomalMemberNotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>1,'status'=>0])->first();
+		case 2:
+        	$inputObj['notify_url']=$server_url."/api/advanceMembernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>2,'status'=>0])->first();
+		case 3:
+        	$inputObj['notify_url']=$server_url."/api/supermeMembernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>3,'status'=>0])->first();
+		case 4:
+        	$inputObj['notify_url']=$server_url."/api/ordernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>4,'status'=>0])->first();
+		}
+        $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
+        
 
         $inputObj['openid'] = $orderInfo['openid'];//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
 		$amount = $orderInfo['amount']*100;

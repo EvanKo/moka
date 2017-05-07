@@ -20,14 +20,22 @@ $api->version('v1', function ($api) {
       $api->post('register', 'LoginController@register'); //tel,name,sex,password
       $api->post('sms', 'LoginController@sessionSet'); //tel,name,sex,password
       $api->post('check', 'LoginController@check'); //tel,name,sex,password
-      //支付回调
-	  $api->any('notify', 'PayModule\WechatPayController@notify');
+	  $api->post('getCode', 'PayModule\BindController@index');
+    $api->post('bind','Patmodule\BindConcontroller@info');
+      //微信支付回调
+	  $api->any('normalMembernotify', 'PayModule\WechatPayController@normalmembernotify');
+	  $api->any('advanceMembernotify', 'PayModule\WechatPayController@advancemembernotify');
+	  $api->any('supermeMembernotify', 'PayModule\WechatPayController@supermemembernotify');
+	  $api->any('ordernotify', 'PayModule\WechatPayController@ordernotify');
       	$api->group(['middleware' => 'jwt.api.auth'], function ($api) {
-		//微信支付
+		//充值
+		$api->post('recharge','PayModule\PayController@recharge');
+		//打赏目标
+		$api->post('paytomoka','PayModule\PhotoController@pay');
 		//购买会员
 		$api->post('buymember', 'PayModule\PayController@member');
+		//微信支付
 		$api->post('pay', 'PayModule\WechatPayController@unifiedOrder');
-	    //登录注册相关
         //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head
@@ -36,6 +44,7 @@ $api->version('v1', function ($api) {
         $api->post('logout', 'LoginController@logout');//finish
 		    $api->post('checkmanager', 'LoginController@checkmanager');//finish tel
 		    //聊天
+        $api->post('checkMsg', 'ChatModule\ChatController@checkMessage');
         $api->post('sendMsg', 'ChatModule\ChatController@sendMsg');
 		    $api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
 		    $api->post('newGroupChat', 'ChatController@newGroupChat');
