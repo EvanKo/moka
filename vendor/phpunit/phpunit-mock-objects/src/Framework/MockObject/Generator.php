@@ -1027,8 +1027,7 @@ class PHPUnit_Framework_MockObject_Generator
             $reference,
             $callOriginalMethods,
             $method->isStatic(),
-            $deprecation,
-            $this->allowsReturnNull($method)
+            $deprecation
         );
     }
 
@@ -1045,11 +1044,10 @@ class PHPUnit_Framework_MockObject_Generator
      * @param bool         $callOriginalMethods
      * @param bool         $static
      * @param string|false $deprecation
-     * @param bool         $allowsReturnNull
      *
      * @return string
      */
-    private function generateMockedMethodDefinition($templateDir, $className, $methodName, $cloneArguments = true, $modifier = 'public', $arguments_decl = '', $arguments_call = '', $return_type = '', $reference = '', $callOriginalMethods = false, $static = false, $deprecation = false, $allowsReturnNull = false)
+    private function generateMockedMethodDefinition($templateDir, $className, $methodName, $cloneArguments = true, $modifier = 'public', $arguments_decl = '', $arguments_call = '', $return_type = '', $reference = '', $callOriginalMethods = false, $static = false, $deprecation = false)
     {
         if ($static) {
             $templateFile = 'mocked_static_method.tpl';
@@ -1094,7 +1092,7 @@ class PHPUnit_Framework_MockObject_Generator
                 'arguments_decl'  => $arguments_decl,
                 'arguments_call'  => $arguments_call,
                 'return_delim'    => $return_type ? ': ' : '',
-                'return_type'     => $allowsReturnNull ? '?' . $return_type : $return_type,
+                'return_type'     => $return_type,
                 'arguments_count' => !empty($arguments_call) ? count(explode(',', $arguments_call)) : 0,
                 'class_name'      => $className,
                 'method_name'     => $methodName,
@@ -1270,19 +1268,6 @@ class PHPUnit_Framework_MockObject_Generator
     private function hasReturnType(ReflectionMethod $method)
     {
         return method_exists(ReflectionMethod::class, 'hasReturnType') && $method->hasReturnType();
-    }
-
-    /**
-     * @param ReflectionMethod $method
-     *
-     * @return bool
-     */
-    private function allowsReturnNull(ReflectionMethod $method)
-    {
-        return method_exists(ReflectionMethod::class, 'getReturnType')
-            && method_exists(ReflectionType::class, 'allowsNull')
-            && $method->hasReturnType()
-            && $method->getReturnType()->allowsNull();
     }
 
     /**

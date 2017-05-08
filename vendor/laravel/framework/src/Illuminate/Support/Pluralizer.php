@@ -29,7 +29,6 @@ class Pluralizer
         'information',
         'knowledge',
         'love',
-        'metadata',
         'money',
         'moose',
         'nutrition',

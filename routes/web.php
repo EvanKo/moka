@@ -10,8 +10,6 @@
 | to using a Closure or controller method. Build something great!
 |
 */
-
-//driver
-Route::group(['middleware' =>'web','prefix'=>'Driver'], function () {
-
+Route::get('test',function(){
+	return 'success arrive';
 });
