@@ -27,9 +27,8 @@ class ChatController extends BaseController
 
 	public function checkMessage(Requests $request)
 	{
-		$token = JWTAuth::getToken()
+		$token = JWTAuth::getToken();
 		$user_message = JWTAuth::toUser($token);
-
 		$moka_id = $user_message['moka'];
 
 		$records = DB::table('ChatRecords')->where('to','=',$moka_id)->get();//unreadMsg:$moka_id 未读消息集合
@@ -43,7 +42,7 @@ class ChatController extends BaseController
 
 	public function newChatGroup(Request $request)
 	{
-		$token = JWTAuth::getToken()
+		$token = JWTAuth::getToken();
 		$user_message = JWTAuth::toUser($token);
 		$moka_id = $user_message['moka'];
 		while(true){
@@ -56,6 +55,7 @@ class ChatController extends BaseController
 		$check = Redis::sadd('group_id:'.$group_id,$moka_id);//添加聊天室成员
 		if(!$check)
 			Log::warning('Create chatgroup fail, user moka_id:'.$user_message['moka']);
+		return $this->returnMsg('200','ok',$group_id);
 	}
 
 	public function checkUserLogin(Request $request)
