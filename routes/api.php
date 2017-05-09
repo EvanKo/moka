@@ -21,7 +21,7 @@ $api->version('v1', function ($api) {
       $api->post('sms', 'LoginController@sessionSet'); //tel,name,sex,password
       $api->post('check', 'LoginController@check'); //tel,name,sex,password
 	  $api->post('getCode', 'PayModule\BindController@index');
-    $api->post('bind','Patmodule\BindConcontroller@info');
+    $api->post('bind','PayModule\BindConcontroller@info');
       //微信支付回调
 	  $api->any('normalMembernotify', 'PayModule\WechatPayController@normalmembernotify');
 	  $api->any('advanceMembernotify', 'PayModule\WechatPayController@advancemembernotify');
