@@ -23,8 +23,8 @@ class EnterprisePayController extends BaseController
     private $openid ="";//接收方的openID  
     private $check_name="NO_CHECK";//校验用户姓名选项。NO_CHECK：不校验真实姓名。FORCE_CHECK：强校验真实姓名（未实名认证的用户会校验失败，无法转账）。OPTION_CHECK：针对已实名认证的用户才校验真实姓名（未实名认证用户不校验，可以转账成功）
     private $re_user_name="";//收款用户姓名,可选。收款用户真实姓名。如果check_name设置为FORCE_CHECK或OPTION_CHECK，则必填用户真实姓名
-    private $amount = 200;//企业付款金额，单位 分，最小一元
-    private $desc="test";//企业付款操作说明信息。必填
+    private $amount = "";//企业付款金额，单位 分，最小一元
+    private $desc="摩卡提现";//企业付款操作说明信息。必填
     private $spbill_create_ip="121.40.220.52";//调用接口的机器Ip地址,即脚本文件所在的IP
 
     private $key="mokaappmoakappmokaappmokaapp";//商户支付密钥
@@ -133,6 +133,13 @@ class EnterprisePayController extends BaseController
             //$result = $this->result('201',var_dump((string)$rsxml->return_code));
             //return response()->json($result);
             if((string)$rsxml->return_code == 'SUCCESS' and ((string)$rsxml->result_code)=='SUCCESS'){
+				$mokaid = this->getMokaId($this->openid);
+
+				DB::beginTransaction();
+				$data = DB::table('Roles')->where('mokaid',$mokaid)->first();
+				$account = $data->money;
+				$data->update(['money'=>$account*100 - $this->amount]);
+				DB::commit();
                 $result = $this->result('200', 'OK');
                 return response()->json($result);
             }else{
@@ -148,6 +155,12 @@ class EnterprisePayController extends BaseController
         }
 
     }    
+	public function getMokaId($openid)
+	{
+		$user = DB::table('wechats')->where('openid',$openid)->first();
+		return $user->mokaid;
+	}
+
        
     public function setOpenId($openid){
         $this->openid = $openid;
