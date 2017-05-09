@@ -34,6 +34,7 @@ class CreateRolesTable extends Migration
             $table->string('bgimg')->nullable()->comment('背景图地址');
             $table->string('password')->comment('密码');
             $table->longText('intro')->nullable()->comment('简介');
+			$table->float('money')->defaut(0)->comment('账户余额');
             $table->timestamps();
         });
     }

@@ -20,7 +20,7 @@ class MainpageController extends BaseController
     //所有数据
     public function main(){
       $role = JWTAuth::toUser();
-      return $role;
-
+      $result = $this->returnMsg('200',"ok",$role);
+      return response()->json($result);
     }
 }

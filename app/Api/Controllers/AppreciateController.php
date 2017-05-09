@@ -23,8 +23,8 @@ class AppreciateController extends BaseController
     //执行点赞或取消点赞
     public function handle(Request $request){
       $role = JWTAuth::toUser();
-      $target = $request->input('kind',null);
-      $target_id = $request->input('key',null);
+      $target = $request->input('target',null);
+      $target_id = $request->input('target_id',null);
       if ($target == null || $target_id == null ) {
         $result = $this->returnMsg('500','request error');
         return response()->json($result);
@@ -61,8 +61,8 @@ class AppreciateController extends BaseController
     //赞列表，有上限
     public function alllist(Request $request){
       $page = $request->input('page',1);
-      $target = $request->input('kind',null);
-      $target_id = $request->input('key',null);
+      $target = $request->input('target',null);
+      $target_id = $request->input('target_id',null);
       if ($target == null || $target_id == null ) {
         $result = $this->returnMsg('500','request error');
         return response()->json($result);

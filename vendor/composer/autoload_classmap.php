@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'AlibabaAliqinFcSmsNumSendRequest' => $baseDir . '/app/Top/top/AlibabaAliqinFcSmsNumSendRequest.php',
+<<<<<<< HEAD
     'App\\Api\\Controllers\\ActivityController' => $baseDir . '/app/Api/Controllers/ChatController.php',
     'App\\Api\\Controllers\\AppreciateController' => $baseDir . '/app/Api/Controllers/AppreciateController.php',
     'App\\Api\\Controllers\\AuthController' => $baseDir . '/app/Api/Controllers/AuthController.php',
@@ -83,11 +84,20 @@ return array(
     'CreateActivitysTable' => $baseDir . '/database/migrations/2017_03_08_113314_create_Activitys_table.php',
     'CreateAppreciatesTable' => $baseDir . '/database/migrations/2017_03_08_110523_create_Appreciates_table.php',
     'CreateAuthesTable' => $baseDir . '/database/migrations/2017_03_08_120625_create_Authes_table.php',
+=======
+    'CreateActivitysTable' => $baseDir . '/database/migrations/2017_03_08_113314_create_Activitys_table.php',
+    'CreateAppreciatesTable' => $baseDir . '/database/migrations/2017_03_08_110523_create_Appreciates_table.php',
+    'CreateAuthesTable' => $baseDir . '/database/migrations/2017_03_08_120625_create_Authes_table.php',
+    'CreateChatRecordsTable' => $baseDir . '/database/migrations/2017_04_05_091236_create_ChatRecords_table.php',
+>>>>>>> 7ea8a3793b6d116bb0e404aeee1688bf13284fd8
     'CreateCommentsTable' => $baseDir . '/database/migrations/2017_03_08_110745_create_Comments_table.php',
     'CreateFansTable' => $baseDir . '/database/migrations/2017_03_08_110318_create_Fans_table.php',
     'CreateFlowsTable' => $baseDir . '/database/migrations/2017_03_28_041757_create_Flows_table.php',
     'CreateFriendsTable' => $baseDir . '/database/migrations/2017_04_10_045107_create_Friends_table.php',
+<<<<<<< HEAD
     'CreateListsTable' => $baseDir . '/database/migrations/2017_04_10_044626_create_Records_table.php',
+=======
+>>>>>>> 7ea8a3793b6d116bb0e404aeee1688bf13284fd8
     'CreateModelsTable' => $baseDir . '/database/migrations/2017_03_08_104341_create_Models_table.php',
     'CreateMokasTable' => $baseDir . '/database/migrations/2017_03_08_111118_create_Mokas_table.php',
     'CreateMomentsTable' => $baseDir . '/database/migrations/2017_03_08_105242_create_Moments_table.php',
@@ -96,6 +106,7 @@ return array(
     'CreatePasswordResetsTable' => $baseDir . '/database/migrations/2014_10_12_100000_create_password_resets_table.php',
     'CreatePhotosTable' => $baseDir . '/database/migrations/2017_03_28_040258_create_Photos_table.php',
     'CreatePropertysTable' => $baseDir . '/database/migrations/2017_03_28_040427_create_Propertys_table.php',
+<<<<<<< HEAD
     'CreateReportsTable' => $baseDir . '/database/migrations/2017_03_08_120111_create_Reports_table.php',
     'CreateRolesTable' => $baseDir . '/database/migrations/2017_03_03_121643_create_Roles_table.php',
     'CreateUsersTable' => $baseDir . '/database/migrations/2014_10_12_000000_create_users_table.php',
@@ -123,6 +134,13 @@ return array(
     'Curl\\CaseInsensitiveArray' => $vendorDir . '/php-curl-class/php-curl-class/src/Curl/CaseInsensitiveArray.php',
     'Curl\\Curl' => $vendorDir . '/php-curl-class/php-curl-class/src/Curl/Curl.php',
     'Curl\\MultiCurl' => $vendorDir . '/php-curl-class/php-curl-class/src/Curl/MultiCurl.php',
+=======
+    'CreateRecordsTable' => $baseDir . '/database/migrations/2017_04_10_044626_create_Records_table.php',
+    'CreateReportsTable' => $baseDir . '/database/migrations/2017_03_08_120111_create_Reports_table.php',
+    'CreateRolesTable' => $baseDir . '/database/migrations/2017_03_03_121643_create_Roles_table.php',
+    'CreateUsersTable' => $baseDir . '/database/migrations/2014_10_12_000000_create_users_table.php',
+    'CreateWechatTable' => $baseDir . '/database/migrations/2017_04_22_103959_create_wechat_table.php',
+>>>>>>> 7ea8a3793b6d116bb0e404aeee1688bf13284fd8
     'DatabaseSeeder' => $baseDir . '/database/seeds/DatabaseSeeder.php',
     'DeepCopy\\DeepCopy' => $vendorDir . '/myclabs/deep-copy/src/DeepCopy/DeepCopy.php',
     'DeepCopy\\Exception\\CloneException' => $vendorDir . '/myclabs/deep-copy/src/DeepCopy/Exception/CloneException.php',

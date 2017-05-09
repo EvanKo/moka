@@ -26,14 +26,16 @@ class OrderController extends BaseController
     //发订单
     public function make(Request $request){
       $role = JWTAuth::toUser();
+      $this->validate($request, [
+        'price' => 'required|Numeric',
+        'type' => 'required|Numeric',
+        'content' => 'required',
+        'img' => 'required|Image',
+      ]);
       $price = $request->input('price',null);
       $type = $request->input('type',null);
       $content = $request->input('content',null);
       $img = $request->file('img',null);
-      $this->returnReq($price,'price');
-      $this->returnReq($type,'type');
-      $this->returnReq($content,'content');
-      $this->returnReq($img,'img');
       $root = public_path().'/photo/order/'.$role['moka'].'/';
       $root2 = '/photo/order/'.$role['moka'].'/';
       if(!file_exists($root)){
