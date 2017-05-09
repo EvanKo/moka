@@ -5,6 +5,7 @@ namespace App\Api\Controllers\Paymodule;
 use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
 use App\Api\Controllers\CommentController;
+use App\Api\Controllers\PayModule\EnterprisePayController;
 use Illuminate\Support\Facades\Session;
 use Curl\Curl;
 use Illuminate\Http\Request;
@@ -95,6 +96,48 @@ class PayController extends BaseController
 			}
 		}else{
 			return $this->returnMsg('500','wechat not bind');
+		}
+	}
+
+	public function getCash(Request $request)
+	{
+		$money = $request->input('money');
+		$userInfo = JWTAuth::toUser();
+		$mokaid = $userInfo['moka'];
+		$openid = $this->getOpenId($mokaid);
+		if(!$openid)
+			return $this->returnMsg('500','not bind wechat');
+		$check = $this->checkMoney($mokaid,$money);
+		if($check){
+			$pay = new EnterprisePayController();
+			$pay->amount = $money*100;
+			$pay->openid = $openid;
+			$result = $pay->send();
+			return $result;
+		}else{
+			return $this->returnMsg('403','not enough money');
+		}
+	}
+
+	public function checkMoney($mokaid,$money)
+	{
+		$data = DB::table('Roles')->where('moka','=',$mokaid)->first();
+		$account = $data->money;
+		if($account<$money){
+			return False;
+			Log::warning('Unvalid request from enterprice-pay, id:'.$mokaid);
+		}else{
+			return True;
+		}
+	}
+
+	public function getOpenId($mokaid)
+	{
+		$wechatdata = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
+		if($wechatdata->count()){
+			return $wechatdata->openid;
+		}else{
+			return false;
 		}
 	}
 
