@@ -4310,8 +4310,6 @@
             "testing",
             "xunit"
         ]
-<<<<<<< HEAD
-=======
     },
     {
         "name": "workerman/mysql",
@@ -4352,6 +4350,5 @@
             "pdo",
             "pdo_mysql"
         ]
->>>>>>> 7ea8a3793b6d116bb0e404aeee1688bf13284fd8
     }
 ]

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Photo extends Model
 {
+	protected $table = 'Photos';
       protected $fillable = array(
       'mokaid'
       ,'imgnum'

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Figure extends Model
 {
+	protected $table = 'Figures';
       protected $fillable = array(
         'moka' ,
         'height' ,

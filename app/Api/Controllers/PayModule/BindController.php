@@ -28,7 +28,7 @@ class BindController extends BaseController
    */
     public function index(){
       $appid = "wx95eaefe010f7c7e8";
-      $redirect_uri = urlencode("http://".$_SERVER['HTTP_HOST']."/api/code");
+      $redirect_uri = urlencode("http://".$_SERVER['HTTP_HOST'].":8760/api/code");
       //不弹窗取用户openid，snsapi_base;弹窗取用户openid及详细信息，snsapi_userinfo;
       $url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$appid."&redirect_uri=".$redirect_uri."&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect";
       return $url;
