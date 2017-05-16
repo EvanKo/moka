@@ -138,7 +138,8 @@ class EnterprisePayController extends BaseController
 				DB::beginTransaction();
 				$data = DB::table('Roles')->where('mokaid',$mokaid)->first();
 				$account = $data->money;
-				$data->update(['money'=>$account*100 - $this->amount]);
+				$rest = ($account*100-$this->amount)/100;
+				$data->update(['money'=> $rest]);
 				DB::commit();
                 $result = $this->result('200', 'OK');
                 return response()->json($result);

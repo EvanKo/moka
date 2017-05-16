@@ -20,7 +20,8 @@ class CreateAuthsTable extends Migration
             $table->string('authentication')->nullable()->comment('认证机构');
             $table->string('identification')->nullable()->unique()->comment('身份证');
             $table->string('identification_img')->nullable()->comment('手持身份证照片地址');
-            $table->string('bussiness_img')->nullable()->comment('营业执照照片地址');
+			$table->string('bussiness_img')->nullable()->comment('营业执照照片地址');
+			$table->integer('isPass')->default(0);
             $table->timestamps();
         });
     }
