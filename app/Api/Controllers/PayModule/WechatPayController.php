@@ -165,7 +165,7 @@ class WechatPayController extends BaseController
         }
         $string = trim($buff, "&");
         //签名步骤二：在string后加入KEY
-        $string = $string. "&key="."mokavtmer666mokavtmer666";
+        $string = $string. "&key="."mokabangbangtang2017051915161234";
         //签名步骤三：MD5加密
         $string = md5($string);
         //签名步骤四：所有字符转为大写

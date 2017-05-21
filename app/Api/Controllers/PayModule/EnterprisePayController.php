@@ -27,7 +27,7 @@ class EnterprisePayController extends BaseController
     private $desc="摩卡提现";//企业付款操作说明信息。必填
     private $spbill_create_ip="121.40.220.52";//调用接口的机器Ip地址,即脚本文件所在的IP
 
-    private $key="mokaappmoakappmokaappmokaapp";//商户支付密钥
+    private $key="moakbangbangtang2017051915161234";//商户支付密钥
           
     //证书
     private $apiclient_cert='/var/www/cert/apiclient_cert.pem'; 
