@@ -27,8 +27,9 @@ class BindController extends BaseController
    *@return  redirect a url with the code
    */
     public function index(){
-      $appid = "wx95eaefe010f7c7e8";
-      $redirect_uri = urlencode("http://".$_SERVER['HTTP_HOST'].":8760/api/code");
+		$appid = "wxa99e4ef76debee57";
+		$redirect_uri = urlencode("http://bbt.rainchapter.com/api/code");
+     // $redirect_uri = urlencode("http://".$_SERVER['HTTP_HOST']."/api/code");
       //不弹窗取用户openid，snsapi_base;弹窗取用户openid及详细信息，snsapi_userinfo;
       $url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=".$appid."&redirect_uri=".$redirect_uri."&response_type=code&scope=snsapi_userinfo&state=123#wechat_redirect";
       return $url;
@@ -39,9 +40,10 @@ class BindController extends BaseController
      *@param wechatcode and remote ip
      *@return  user openid
      */
-    public function info($code){
-	   	$appid = "wx95eaefe010f7c7e8";
-		$appsecret = "bf5f7646164df5cd99d8a0363b6b0ed6";
+	public function info(Request $request){
+		$code = $request->input('code');
+		$appid = "wxa99e4ef76debee57";
+		$appsecret = "fca460c137e15dbcea5ff1d7abf464f6";
 		$userInfo = JWTAuth::fromUser();
 		$mokaid = $userInfo['userInfo'];
 
@@ -49,8 +51,8 @@ class BindController extends BaseController
       	$curl = new Curl();
       	$curl->setOpt(CURLOPT_SSL_VERIFYPEER, FALSE);
       	$curl->get($url);
-      	$response = $curl->response;
-      	$response = json_decode($response,true);
+		$response = $curl->response;
+		$response = json_decode($response,true);
       	$access_token = $response['access_token'];
       	$openid = $response['openid'];
       	$url_info ="https://api.weixin.qq.com/sns/userinfo?access_token=".$access_token."&openid=".$openid."&lang=zh_CN";
@@ -59,6 +61,7 @@ class BindController extends BaseController
       	$curl->close();
 		$info = json_decode($info,true);
 		$info['mokaid'] = $mokaid;
+		unset($info['privilege']);
 		$result = $this->store($info);
 		if($result)
 			return $this->returnMsg('200','ok');
@@ -68,7 +71,7 @@ class BindController extends BaseController
 
 	public function store($info){
    		$openid = $info['openid'];
-    	$user = wechat::where("openid","=",$openid)->first();
+    	$user = Wechat::where("openid","=",$openid)->first();
       	if ($user == null) {
        		$query = Wechat::create($info);
      	}else {
@@ -171,20 +174,11 @@ class BindController extends BaseController
      *
      *
      */
-    public function code($request){
+    public function code(Request $request){
+	  return $_GET['code'];
       $arr = array ('code'=>$_GET['code']);
       return response()->json(compact('arr'));
     }
 
-
-    public function test(){
-      $curl = new Curl();//测试Curl
-      // $curl->get('www.obstacle.cn:7007/api/works');
-      // $response = $curl->response;
-      // $response = json_encode($response,true);
-      // $response = json_decode($response,true);
-      return JWTAuth::toUser();
-      $arr = array ('status'=>"success");
-      return response()->json(compact('arr'));
-    }
 }
+    

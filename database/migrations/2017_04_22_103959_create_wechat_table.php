@@ -22,6 +22,7 @@ class CreateWechatTable extends Migration
 			$table->string('country');
 			$table->string('province');
 			$table->string('city');
+			$table->string('language');
 			$table->string('sex');
 			$table->timestamps();
 		});

@@ -20,7 +20,7 @@ class EnterprisePayController extends BaseController
     private $nonce_str = "";//随机字符串，不长于32位
     private $sign = ""; //签名在send时生成
     private $partner_trade_no = "";//商户订单号
-    private $openid ="";//接收方的openID  
+    private $openid ="oSZHCuF-2t39bKrpcKztMQZqnrGc";//接收方的openID  
     private $check_name="NO_CHECK";//校验用户姓名选项。NO_CHECK：不校验真实姓名。FORCE_CHECK：强校验真实姓名（未实名认证的用户会校验失败，无法转账）。OPTION_CHECK：针对已实名认证的用户才校验真实姓名（未实名认证用户不校验，可以转账成功）
     private $re_user_name="";//收款用户姓名,可选。收款用户真实姓名。如果check_name设置为FORCE_CHECK或OPTION_CHECK，则必填用户真实姓名
     private $amount = "";//企业付款金额，单位 分，最小一元
