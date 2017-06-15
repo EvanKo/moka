@@ -30,11 +30,13 @@ class ActivityController extends BaseController
       $this->validate($request, [
         'img' => 'Image',
         'title' => 'required',
-        'content' => 'required'
+        'content' => 'required',
+        'type' => 'required'
       ]);
       $img = $request->file('img',null);
       $content = $request->input('content',null);
       $title = $request->input('title',null);
+      $type = $request->input('type',null);
       $role = JWTAuth::toUser();
       $moka = $role['moka'];
       if ($img != null) {
@@ -50,6 +52,7 @@ class ActivityController extends BaseController
       $input['content'] = $content;
       $input['moka'] = $moka;
       $input['title'] = $title;
+      $input['type'] = $type;
       // $input['pass'] = '1';
       $input['area'] = $role['area'];
       $result = Activity::create($input);
@@ -100,13 +103,17 @@ class ActivityController extends BaseController
         $area = $role['area'] == null ? 1:$role['area'];
         $page = $request->input('page',1);
         $area = $request->input('area',$area);
+        $type = $request->input('type',null);
         $record = DB::table('Activities')
-          ->where('area',$area)
+          ->where('area',$area);
+        if ($type != null) {
+          $record = $record->where('type',$type);
+        }
+          $record = $record->orderBy('id','desc')
           // ->where('pass','1')
-          ->orderBy('id','desc')
           ->skip(($page-1)*10)
           ->limit(10)
-          ->select('img','area','content','moka')
+          ->select('img','area','content','moka','type','created_at')
           ->get();
         $flows = json_decode($record,true);
         $num = 0;

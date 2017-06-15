@@ -134,7 +134,7 @@ class PayController extends BaseController
 	public function getOpenId($mokaid)
 	{
 		$wechatdata = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
-		if($wechatdata->count()){
+		if($wechatdata){
 			return $wechatdata->openid;
 		}else{
 			return false;
@@ -150,4 +150,5 @@ class PayController extends BaseController
 		else{
 			return false;
 		}
+	}
 }

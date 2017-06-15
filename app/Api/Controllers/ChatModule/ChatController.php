@@ -24,7 +24,7 @@ class ChatController extends BaseController
     public function __construct(){
         parent::__construct();
 	}
-
+	//检查是否有未收到消息
 	public function checkMessage(Requests $request)
 	{
 		$token = JWTAuth::getToken();
@@ -39,7 +39,7 @@ class ChatController extends BaseController
 			return $this->returnMsg('404','Unread message not found');
 		}
 	}
-
+	//新建群聊
 	public function newChatGroup(Request $request)
 	{
 		$token = JWTAuth::getToken();
@@ -57,12 +57,12 @@ class ChatController extends BaseController
 			Log::warning('Create chatgroup fail, user moka_id:'.$user_message['moka']);
 		return $this->returnMsg('200','ok',$group_id);
 	}
-
+	//websocket登陆验证token
 	public function checkUserLogin(Request $request)
 	{
-		$token = JWTAuth::getToken();
-		$user_json = JWTAuth::toUser($token);
-		return $user_json;
+		$user_json = JWTAuth::toUser();
+		$data = json_decode($user_json,true);
+		return $data; 
 	}
     //加入群聊
 	public function joinGroup(Request $request)
@@ -78,7 +78,7 @@ class ChatController extends BaseController
 		}
 		else return $this->returnMsg('404','Can not find the group');
 	}
-	//开启聊天
+	//开启聊天,测试接口用
 	public function sendMsg(Request $request)
 	{
 		$type = $request->input('type');

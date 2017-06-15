@@ -25,7 +25,7 @@ class FanController extends BaseController
     public function handle(Request $request){
       $role = JWTAuth::toUser();
       $moka = $request->input('moka',null);
-      if ($moka == null ) {
+      if ($moka == null or $moka == $role['moka']) {
         $result = $this->returnMsg('500','request error');
         return response()->json($result);
       }
@@ -98,7 +98,7 @@ class FanController extends BaseController
     public function idol(Request $request){
       $role = JWTAuth::toUser();
       $page = $request->input('page',1);
-      $moka = $role['moka'];
+      $moka = $request->input('moka',$role['moka']);
       $data = DB::table('Fans')->where('fan',$moka)
       ->orderBy('id','desc')
       ->select('id','idol','idolname','idolhead','idolsex');
@@ -117,7 +117,7 @@ class FanController extends BaseController
     public function fan(Request $request){
       $role = JWTAuth::toUser();
       $page = $request->input('page',1);
-      $moka = $role['moka'];
+      $moka = $request->input('moka',$role['moka']);
       $data = DB::table('Fans')->where('idol',$moka)
       ->orderBy('id','desc')
       ->select('id','fan','fanname','fanhead','fansex');

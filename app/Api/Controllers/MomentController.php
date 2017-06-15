@@ -33,7 +33,11 @@ class MomentController extends BaseController
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-      $root = public_path().'/photo/moment/'.$moka.'/';
+	  $root = public_path().'/photo/moment/';
+	  if(!file_exists($root)){
+	  	mkdir($root);
+	  }
+	  $root = $root.$moka.'/';
       $root2 = '/photo/moment/'.$moka.'/';
       if(!file_exists($root)){
         mkdir($root);

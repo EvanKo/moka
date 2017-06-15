@@ -1,4 +1,4 @@
-<?php
+  <?php
 use Illuminate\Http\Request;
 
 /*
@@ -20,17 +20,19 @@ $api->version('v1', function ($api) {
       $api->post('register', 'LoginController@register'); //tel,name,sex,password
       $api->post('sms', 'LoginController@sessionSet'); //tel,name,sex,password
       $api->post('check', 'LoginController@check'); //tel,name,sex,password
-	  $api->get('getCode', 'PayModule\BindController@index');
-	  $api->any('code', 'PayModule\BindController@code');
-		$api->post('pay', 'PayModule\WechatPayController@unifiedOrder');
+      $api->post('phonecheck', 'LoginController@phonechecks'); //tel,name,sex,password
+      //首页榜
+      $api->post('model', 'MainpageController@modelgirls'); //finish page,area
+      $api->post('photographers', 'MainpageController@photographers'); //finish page,area
+      $api->post('hotguys', 'MainpageController@hot'); //
+	  $api->post('getCode', 'PayModule\BindController@index');
+    $api->post('bind','Patmodule\BindConcontroller@info');
       //微信支付回调
 	  $api->any('normalMembernotify', 'PayModule\WechatPayController@normalmembernotify');
 	  $api->any('advanceMembernotify', 'PayModule\WechatPayController@advancemembernotify');
 	  $api->any('supermeMembernotify', 'PayModule\WechatPayController@supermemembernotify');
 	  $api->any('ordernotify', 'PayModule\WechatPayController@ordernotify');
       $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
-		//绑定微信
-	  	$api->post('bind','PayModule\BindController@info');
 		//充值
 		$api->post('recharge','PayModule\PayController@recharge');
 		//打赏目标
@@ -38,6 +40,7 @@ $api->version('v1', function ($api) {
 		//购买会员
 		$api->post('buymember', 'PayModule\PayController@member');
 		//微信支付
+		$api->post('pay', 'PayModule\WechatPayController@unifiedOrder');
        //登录注册相关
         $api->post('role', 'LoginController@roleUpdate');//finish role
         $api->post('head', 'LoginController@headUpdate');//finish head

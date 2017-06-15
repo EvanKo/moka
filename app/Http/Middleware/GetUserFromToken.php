@@ -33,14 +33,20 @@ class GetUserFromToken
                 'message' => 'token_invalid',
                 'data' => '',
             ]);
-        }
-        $role = JWTAuth::toUser($token);
-        if (!strpos($role['lastest'],date('y-m-d',time()))) {
-          $object = DB::table('Roles')
-                    ->where('id', $role['id']);
-          $object->update(['login' => $role['login']+1]);
-          $object->update(['lastest' => date('y-m-d',time())]);
-        }
-        return $next($request);
+		}
+		$role = JWTAuth::toUser($token);
+		        $login = $role['login'];
+								          $object = DB::table('Roles')
+											                      ->where('id', $role['id']);
+					        if (!strpos($role['lastest'],date('y-m-d',time()))) {
+										            $login = $login+1;
+										            $object->update(['login' => $login]);
+													          $object->update(['lastest' => date('y-m-d',time())]);
+													        }
+		          $fans = $role['fans'];
+		          $fee = $role['fee'];
+				            $value = $login + $fans + 2 * $fee;
+				            $object->update(['value' => $value]);
+							        return $next($request);
     }
 }

@@ -64,21 +64,24 @@ class CommentController extends BaseController
     }
     //动态列表只显示前两条
     public static function two($target,$target_id){
-      $query = 'select * from comments where target = \''.$target.'\' and target_id =\''.$target_id.'\' limit 0,2';
-      $result = DB::select($query);
+      $data = DB::table('Comments')
+        ->where('target',$target)
+        ->where('target_id',$target_id);
+      $result['sum'] = $data->get()->count();
+      $result['comment'] = $data->limit(2)->get();
       return $result;
     }
     //评论列表，加载所有评论，每次请求10条
     public function list(Request $request){
-      $target = $request->input('kind',null);
-      $target_id = $request->input('key',null);
+      $target = $request->input('target',null);
+      $target_id = $request->input('target_id',null);
       $page = $request->input('page',1);
       if ($target == null || $target_id == null) {
         $result = $this->returnMsg('500','request error');
         return response()->json($result);
       }
       $page = ($page-1)*10;
-      $query = 'select * from comments where target = \''.$target.'\' and target_id =\''.$target_id.'\' limit '.$page.',10';
+      $query = 'select * from Comments where target = \''.$target.'\' and target_id =\''.$target_id.'\' limit '.$page.',10';
       $result = DB::select($query);
       if ($result == null) {
         $result = $this->returnMsg('200','The end');

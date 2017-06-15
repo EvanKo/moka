@@ -26,9 +26,8 @@ class CommonController extends BaseController
     }
     public static function self($id){
       $role = DB::table('Roles')->where('moka',$id)
-        ->select('id','moka', 'name','head','sex','role'
-        ,'province','city')
-        ->get();
+        ->select('id','moka', 'name','head','sex','role','province','city')
+        ->first();
       return $role;
     }
 
@@ -155,8 +154,9 @@ class CommonController extends BaseController
     public function selfrecord(Request $request){
         $role = JWTAuth::toUser();
         $page = $request->input('page',1);
+        $moka = $request->input('moka',$role['moka']);
         $record = DB::table('Records')
-          ->where('moka',$role['moka'])
+          ->where('moka',$moka)
           ->orderBy('id','desc')
           ->skip(($page-1)*10)
           ->limit(10)
@@ -254,10 +254,12 @@ class CommonController extends BaseController
         case 1:
           $moment = DB::table('Moments')
             ->where('id',$target_id);
-          $result['moment'] = $moment->get();
-          $view = json_decode($result['moment'],true);
+          $view = json_decode($moment->get(),true);
+          $moka = $view[0]['moka'];
           $view = $view[0]['view']+1;
           $moment->update(['view'=>$view]);
+          $result['moment'] = $moment->first();
+          $result['author'] = CommonController::self($moka);
           $result['zan'] = AppreciateController::list(1,$target_id,10);
           $result['comments'] = CommentController::two($target,$target_id);
           DB::table('Records')->where('target_id',$target_id)
@@ -267,10 +269,12 @@ class CommonController extends BaseController
         case 2:
           $order = DB::table('Orders')
             ->where('id',$target_id);
-          $result['order'] = $order->get();
-          $view = json_decode($result['order'],true);
+          $view = json_decode($order->get(),true);
+          $moka = $view[0]['moka'];
           $view = $view[0]['view']+1;
           $order->update(['view'=>$view]);
+          $result['order'] = $order->first();
+          $result['author'] = CommonController::self($moka);
           $result['zan'] = AppreciateController::list(2,$target_id,10);
           $result['comments'] = CommentController::two($target,$target_id);
           DB::table('Records')->where('target_id',$target_id)
@@ -295,6 +299,7 @@ class CommonController extends BaseController
               ->update(['view'=>$data['view']]);
           $result['moka'] = $data;
           $result['photos'] = $photos;
+          $result['author'] = CommonController::self($data['moka']);
           $result['zan'] = AppreciateController::list(3,$target_id,10);
           $result['comments'] = CommentController::two($target,$target_id);
           break;
