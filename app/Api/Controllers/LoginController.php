@@ -114,8 +114,22 @@ class LoginController extends BaseController
       return response()->json($result);
     }
     //上传资料
-    public function update(){
-
+    public function update(Request $request){
+      $role = JWTAuth::toUser();
+      $this->validate($request, [
+        'name' => 'required',
+        'area' => 'required|Numeric',
+        'province' => 'required',
+        'city' => 'required',
+        'office' => 'required',
+        'intro' => 'required',
+        'workexp' => 'required',
+      ]);
+      $result = DB::table('Roles')
+        ->where('id',$role['id'])
+        ->update($request->all());
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
     }
     //上传头像
     public function bgUpdate(Request $request){

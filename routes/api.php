@@ -39,6 +39,7 @@ $api->version('v1', function ($api) {
 		$api->post('paytomoka','PayModule\PhotoController@pay');
 		//购买会员
 		$api->post('buymember', 'PayModule\PayController@member');
+      $api->post('update', 'LoginController@update'); //name province city office area intro workexp
 		//微信支付
 		$api->post('pay', 'PayModule\WechatPayController@unifiedOrder');
        //登录注册相关

@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'AddActivitiesType' => $baseDir . '/database/migrations/2017_06_09_171341_add_activities_type.php',
+    'AddRoleMore' => $baseDir . '/database/migrations/2017_06_16_140608_add_role_more.php',
     'AddValueToRole' => $baseDir . '/database/migrations/2017_06_04_221117_add_value_to_role.php',
     'AlibabaAliqinFcSmsNumSendRequest' => $baseDir . '/app/Top/top/AlibabaAliqinFcSmsNumSendRequest.php',
     'CreateActivitysTable' => $baseDir . '/database/migrations/2017_03_08_113314_create_Activitys_table.php',

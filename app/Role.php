@@ -24,5 +24,7 @@ class Role extends Model
       ,'bgimg'
       ,'password'
       ,'intro'
+      ,'workexp'
+      ,'office'
       ,'area');
 }
