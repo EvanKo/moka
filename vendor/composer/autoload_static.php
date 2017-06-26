@@ -371,10 +371,12 @@ class ComposerStaticInit5df64a1fd7371fd2cbd5c64f81dbeec9
     );
 
     public static $classMap = array (
+        'ActLocal' => __DIR__ . '/../..' . '/database/migrations/2017_06_25_211047_act_local.php',
         'AddActivitiesType' => __DIR__ . '/../..' . '/database/migrations/2017_06_09_171341_add_activities_type.php',
         'AddRoleMore' => __DIR__ . '/../..' . '/database/migrations/2017_06_16_140608_add_role_more.php',
         'AddValueToRole' => __DIR__ . '/../..' . '/database/migrations/2017_06_04_221117_add_value_to_role.php',
         'AlibabaAliqinFcSmsNumSendRequest' => __DIR__ . '/../..' . '/app/Top/top/AlibabaAliqinFcSmsNumSendRequest.php',
+        'CommentTo' => __DIR__ . '/../..' . '/database/migrations/2017_06_26_124202_comment_to.php',
         'CreateActivitysTable' => __DIR__ . '/../..' . '/database/migrations/2017_03_08_113314_create_Activitys_table.php',
         'CreateAppreciatesTable' => __DIR__ . '/../..' . '/database/migrations/2017_03_08_110523_create_Appreciates_table.php',
         'CreateAuthsTable' => __DIR__ . '/../..' . '/database/migrations/2017_03_08_120625_create_Auths_table.php',
@@ -398,6 +400,9 @@ class ComposerStaticInit5df64a1fd7371fd2cbd5c64f81dbeec9
         'CreateUsersTable' => __DIR__ . '/../..' . '/database/migrations/2014_10_12_000000_create_users_table.php',
         'CreateWechatTable' => __DIR__ . '/../..' . '/database/migrations/2017_04_22_103959_create_wechat_table.php',
         'DatabaseSeeder' => __DIR__ . '/../..' . '/database/seeds/DatabaseSeeder.php',
+        'DelAct' => __DIR__ . '/../..' . '/database/migrations/2017_06_19_025234_del_act.php',
+        'DelActType' => __DIR__ . '/../..' . '/database/migrations/2017_06_21_105522_del_act_type.php',
+        'DeleAuth' => __DIR__ . '/../..' . '/database/migrations/2017_06_19_000714_dele_auth.php',
         'DeleteRoleLocal' => __DIR__ . '/../..' . '/database/migrations/2017_06_04_165939_delete_role_local.php',
         'File_Iterator' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Iterator.php',
         'File_Iterator_Facade' => __DIR__ . '/..' . '/phpunit/php-file-iterator/src/Facade.php',
@@ -470,6 +475,9 @@ class ComposerStaticInit5df64a1fd7371fd2cbd5c64f81dbeec9
         'Hamcrest\\Type\\IsString' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsString.php',
         'Hamcrest\\Util' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Util.php',
         'Hamcrest\\Xml\\HasXPath' => __DIR__ . '/..' . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Xml/HasXPath.php',
+        'NewAct' => __DIR__ . '/../..' . '/database/migrations/2017_06_19_025355_new_act.php',
+        'NewActType' => __DIR__ . '/../..' . '/database/migrations/2017_06_21_105700_new_act_type.php',
+        'NewAuth' => __DIR__ . '/../..' . '/database/migrations/2017_06_19_000857_new_auth.php',
         'PHPUnit\\Framework\\TestCase' => __DIR__ . '/..' . '/phpunit/phpunit/src/ForwardCompatibility/TestCase.php',
         'PHPUnit_Exception' => __DIR__ . '/..' . '/phpunit/phpunit/src/Exception.php',
         'PHPUnit_Extensions_GroupTestSuite' => __DIR__ . '/..' . '/phpunit/phpunit/src/Extensions/GroupTestSuite.php',

@@ -6,10 +6,12 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'ActLocal' => $baseDir . '/database/migrations/2017_06_25_211047_act_local.php',
     'AddActivitiesType' => $baseDir . '/database/migrations/2017_06_09_171341_add_activities_type.php',
     'AddRoleMore' => $baseDir . '/database/migrations/2017_06_16_140608_add_role_more.php',
     'AddValueToRole' => $baseDir . '/database/migrations/2017_06_04_221117_add_value_to_role.php',
     'AlibabaAliqinFcSmsNumSendRequest' => $baseDir . '/app/Top/top/AlibabaAliqinFcSmsNumSendRequest.php',
+    'CommentTo' => $baseDir . '/database/migrations/2017_06_26_124202_comment_to.php',
     'CreateActivitysTable' => $baseDir . '/database/migrations/2017_03_08_113314_create_Activitys_table.php',
     'CreateAppreciatesTable' => $baseDir . '/database/migrations/2017_03_08_110523_create_Appreciates_table.php',
     'CreateAuthsTable' => $baseDir . '/database/migrations/2017_03_08_120625_create_Auths_table.php',
@@ -33,6 +35,9 @@ return array(
     'CreateUsersTable' => $baseDir . '/database/migrations/2014_10_12_000000_create_users_table.php',
     'CreateWechatTable' => $baseDir . '/database/migrations/2017_04_22_103959_create_wechat_table.php',
     'DatabaseSeeder' => $baseDir . '/database/seeds/DatabaseSeeder.php',
+    'DelAct' => $baseDir . '/database/migrations/2017_06_19_025234_del_act.php',
+    'DelActType' => $baseDir . '/database/migrations/2017_06_21_105522_del_act_type.php',
+    'DeleAuth' => $baseDir . '/database/migrations/2017_06_19_000714_dele_auth.php',
     'DeleteRoleLocal' => $baseDir . '/database/migrations/2017_06_04_165939_delete_role_local.php',
     'File_Iterator' => $vendorDir . '/phpunit/php-file-iterator/src/Iterator.php',
     'File_Iterator_Facade' => $vendorDir . '/phpunit/php-file-iterator/src/Facade.php',
@@ -105,6 +110,9 @@ return array(
     'Hamcrest\\Type\\IsString' => $vendorDir . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Type/IsString.php',
     'Hamcrest\\Util' => $vendorDir . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Util.php',
     'Hamcrest\\Xml\\HasXPath' => $vendorDir . '/hamcrest/hamcrest-php/hamcrest/Hamcrest/Xml/HasXPath.php',
+    'NewAct' => $baseDir . '/database/migrations/2017_06_19_025355_new_act.php',
+    'NewActType' => $baseDir . '/database/migrations/2017_06_21_105700_new_act_type.php',
+    'NewAuth' => $baseDir . '/database/migrations/2017_06_19_000857_new_auth.php',
     'PHPUnit\\Framework\\TestCase' => $vendorDir . '/phpunit/phpunit/src/ForwardCompatibility/TestCase.php',
     'PHPUnit_Exception' => $vendorDir . '/phpunit/phpunit/src/Exception.php',
     'PHPUnit_Extensions_GroupTestSuite' => $vendorDir . '/phpunit/phpunit/src/Extensions/GroupTestSuite.php',

@@ -106,6 +106,7 @@ class CommonController extends BaseController
       $mokaid =  $data['mokaid'];
       $photos = DB::table('Photos')
         ->where('mokaid',$mokaid)
+        ->orderBy('imgnum')
         ->select('Photos.id','Photos.imgnum','Photos.img_s')
         ->get();
       $data['view'] += 1;
@@ -129,7 +130,7 @@ class CommonController extends BaseController
         return response()->json($result);
       }
       $activity = DB::table('Activities')->where('id',$id)
-        ->select('id','moka','content','img','view','created_at');
+        ->select('id','moka','title','content','view','start','end','price','type','local');
       if ($activity->count() == 0) {
         $result = $this->returnMsg('500','id error');
         return response()->json($result);
@@ -139,12 +140,14 @@ class CommonController extends BaseController
       $data = $data[0];
       $data['view'] += 1;
       $activity->update(['view'=>$data['view']]);
-      DB::table('Records')->where('target_id',$id)
-        ->where('target',4)
-        ->update(['view'=>$data['view']]);
+      $data['photo'] = DB::table('Photos')->where('mokaid',$id)
+        ->where('act',1)
+        ->orderBy('imgnum')
+        ->select('id','img_l','imgnum')
+        ->get();
       $zan = AppreciateController::list(4,$id,10);
       $result['zan'] = $zan;
-      $result['activity '] = $data;
+      $result['activity'] = $data;
       $result['author'] = CommonController::self($data['moka']);
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);

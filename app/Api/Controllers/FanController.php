@@ -105,7 +105,7 @@ class FanController extends BaseController
       $data = $data->skip(($page-1)*15)
       ->limit(15)
       ->get();
-      $result['data'] = $data;
+      $result = $data;
       if ($result == null) {
         $result = $this->returnMsg('200','The end');
         return response()->json($result);
@@ -124,7 +124,7 @@ class FanController extends BaseController
       $data = $data->skip(($page-1)*15)
       ->limit(15)
       ->get();
-      $result['data'] = $data;
+      $result = $data;
       if ($result == null) {
         $result = $this->returnMsg('200','The end');
         return response()->json($result);

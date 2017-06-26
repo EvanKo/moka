@@ -47,7 +47,7 @@ class MainpageController extends BaseController
           ->orderBy('fans','desc')
           ->skip(($page-1)*15)
           ->limit(15)
-          ->select('id','head','name','sex','v')
+          ->select('id','head','name','sex','v','moka')
           ->get();
       }
       else {$record = DB::table('Roles')
@@ -56,7 +56,7 @@ class MainpageController extends BaseController
         ->orderBy('fans','desc')
         ->skip(($page-1)*15)
         ->limit(15)
-        ->select('id','head','name','sex','v')
+        ->select('id','head','name','sex','v','moka')
         ->get();
       }
       if ($record->count() == 0) {
@@ -100,13 +100,13 @@ class MainpageController extends BaseController
         ->where('role',0)
         ->orderBy('value','desc')
         ->limit(6)
-        ->select('id','head','name','sex','v','intro')
+        ->select('id','head','name','sex','v','intro','moka')
         ->get();
       $record['photogra'] = DB::table('Roles')
         ->where('role',1)
         ->orderBy('value','desc')
         ->limit(6)
-        ->select('id','head','name','sex','v','intro')
+        ->select('id','head','name','sex','v','intro','moka')
         ->get();
       $result = $this->returnMsg('200','ok',$record);
       return response()->json($result);

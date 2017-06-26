@@ -52,9 +52,10 @@ $api->version('v1', function ($api) {
 		    //聊天
         $api->post('checkMsg', 'ChatModule\ChatController@checkMessage');
         $api->post('sendMsg', 'ChatModule\ChatController@sendMsg');
-		    $api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
-		    $api->post('newGroupChat', 'ChatController@newGroupChat');
-		    $api->post('joinGroup', 'ChatController@joinGroup');
+	  		//websocket用于检验用户token
+	  		$api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
+	    $api->post('newGroupChat', 'ChatController@newGroupChat');
+	    $api->post('joinGroup', 'ChatController@joinGroup');
 		    //动态
         $api->post('makemoment', 'MomentController@make');//finish img,content
         $api->post('delemoment', 'MomentController@delete');//finish momentid
@@ -63,7 +64,8 @@ $api->version('v1', function ($api) {
         $api->post('makecomment', 'CommentController@make');//finish target,target_id,answer,answername,content
         $api->post('delecomment', 'CommentController@dele');//finish id
         $api->post('commentlist', 'CommentController@list');//finish target,target_id
-        //赞
+		$api->post('mycomment', 'CommentController@my');//finish moka,page
+		//赞
         $api->post('zan', 'AppreciateController@handle');//finish kind,key
         $api->post('zanlist', 'AppreciateController@alllist');
         //关注
@@ -95,15 +97,20 @@ $api->version('v1', function ($api) {
         $api->post('search', 'LoginController@search');//finish key,page
         $api->post('area', 'LoginController@area');//finish page
         //活动
-        $api->post('makeactivity', 'ActivityController@make');//finish key,page
-        $api->post('deleactivity', 'ActivityController@delete');//finish key,page
-        $api->post('areaactivity', 'ActivityController@areaactivity');//finish key,page
+		$api->post('startactivity', 'ActivityController@start');//finish key,page
+		        $api->post('deleactivity', 'ActivityController@delete');//finish key,page
+		        $api->post('saveactivity', 'ActivityController@save');//finish key,page
+				        $api->post('actphoto', 'PhotoController@actupdate');//finish num,img
+				$api->post('areaactivity', 'ActivityController@areaactivity');//finish key,page
         $api->post('activity', 'CommonController@activity');//finish id
         //认证
-        $api->post('authphoto', 'AuthController@photo');//finish img,choose
         $api->post('auth', 'AuthController@update');//finish name,company,id
         //举报
         $api->post('report', 'ReportController@report');//finish content
-      });
+		//修改密码
+		$api->post('changepassword', 'LoginController@changepassword');//finish new old
+	  	//执行，参加
+		 $api->post('startdeal', 'StatusController@start');//finish content
+	  });
     });
 });

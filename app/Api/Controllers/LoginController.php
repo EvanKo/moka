@@ -231,6 +231,24 @@ class LoginController extends BaseController
       $result = $this->returnMsg('500','num error');
       return response()->json($result);
     }
+    //忘记密码
+    public function changepassword(Request $request){
+      $role = JWTAuth::toUser();
+      $this->validate($request, [
+        'old' => 'required',
+        'new' => 'required',
+      ]);
+      $old = $request->input('old');
+      $new = $request->input('new');
+      if ($role['password'] == sha1($old)) {
+        DB::table('Roles')->where('id',$role['id'])
+          ->update(['password'=>sha1($new)]);
+        $result = $this->returnMsg('200','new password:'.$new,$new);
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('500','old password error');
+      return response()->json($result);
+    }
     //短信
     public function message($num,$tel){
     	$c = new TopClient();

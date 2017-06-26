@@ -9,10 +9,11 @@ class Auth extends Model
       protected $table = 'Auths';
       protected $fillable = array(
         'moka'
-        ,'authentication_name'
-        ,'authentication'
-        ,'identification'
-        ,'identification_img'
-        ,'bussiness_img'
+        ,'realname'
+        ,'company'
+        ,'companyname'
+        ,'idcardnumber'
+        ,'img'
+        ,'pass'
     );
 }
