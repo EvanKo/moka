@@ -13,7 +13,8 @@
         "tymon/jwt-auth": "0.5.*",
         "predis/predis": "^1.1",
         "workerman/mysql": "^1.0",
-        "intervention/image": "^2.3"
+        "intervention/image": "^2.3",
+        "doctrine/dbal": "v2.4.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
@@ -29,7 +30,8 @@
             "app/Top/top/AlibabaAliqinFcSmsNumSendRequest.php",
             "app/Top/top/RequestCheckUtil.php",
             "app/Top/top/ResultSet.php",
-            "app/Top/top/TopLogger.php"
+            "app/Top/top/TopLogger.php",
+            "app/Qiniu"
         ],
         "psr-4": {
             "App\\": "app/"

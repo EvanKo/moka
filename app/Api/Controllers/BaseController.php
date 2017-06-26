@@ -41,10 +41,10 @@ class BaseController extends Controller
       $login = $role['login'];
       $fans = $role['fans'];
       $fee = $role['fee'];
-      $value = $login + $fans + 2 * fee;
-      $result = DB::table('Role')
+      $value = $login + $fans + 2 * $fee;
+      $result = DB::table('Roles')
         ->where('id',$id)
-        ->update('value',$value);
+        ->update(['value' => $value]);
       return true;
     }
 

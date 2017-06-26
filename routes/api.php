@@ -64,8 +64,8 @@ $api->version('v1', function ($api) {
         $api->post('makecomment', 'CommentController@make');//finish target,target_id,answer,answername,content
         $api->post('delecomment', 'CommentController@dele');//finish id
         $api->post('commentlist', 'CommentController@list');//finish target,target_id
-		$api->post('mycomment', 'CommentController@my');//finish moka,page
-		//赞
+        $api->post('mycomment', 'CommentController@my');//finish moka,page
+        //赞
         $api->post('zan', 'AppreciateController@handle');//finish kind,key
         $api->post('zanlist', 'AppreciateController@alllist');
         //关注
@@ -92,25 +92,27 @@ $api->version('v1', function ($api) {
         //好友
         $api->post('friend', 'CommonController@friend');//finish page
         //热门
+
         $api->post('hot', 'CommonController@hot');//finish page
         //搜索
         $api->post('search', 'LoginController@search');//finish key,page
         $api->post('area', 'LoginController@area');//finish page
         //活动
-		$api->post('startactivity', 'ActivityController@start');//finish key,page
-		        $api->post('deleactivity', 'ActivityController@delete');//finish key,page
-		        $api->post('saveactivity', 'ActivityController@save');//finish key,page
-				        $api->post('actphoto', 'PhotoController@actupdate');//finish num,img
-				$api->post('areaactivity', 'ActivityController@areaactivity');//finish key,page
+        $api->post('startactivity', 'ActivityController@start');//finish key,page
+        $api->post('deleactivity', 'ActivityController@delete');//finish key,page
+        $api->post('saveactivity', 'ActivityController@save');//finish key,page
+        $api->post('actphoto', 'PhotoController@actupdate');//finish num,img
+        $api->post('areaactivity', 'ActivityController@areaactivity');//finish key,page
         $api->post('activity', 'CommonController@activity');//finish id
         //认证
         $api->post('auth', 'AuthController@update');//finish name,company,id
         //举报
         $api->post('report', 'ReportController@report');//finish content
-		//修改密码
-		$api->post('changepassword', 'LoginController@changepassword');//finish new old
-	  	//执行，参加
-		 $api->post('startdeal', 'StatusController@start');//finish content
-	  });
+        //修改密码
+        $api->post('changepassword', 'LoginController@changepassword');//finish content
+        //执行，参加
+        $api->post('startdeal', 'StatusController@start');//finish content
+
+      });
     });
 });

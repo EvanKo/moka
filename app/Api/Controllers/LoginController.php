@@ -61,7 +61,7 @@ class LoginController extends BaseController
               $input['friendb'] = $mokanum;
               $input['name'] = $name;
               $input['sex'] = $sex;
-              $input['head'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
+              $input['head'] = 'http://os3h4gw7b.bkt.clouddn.com/head/timg.jpeg';
               $input['lastest'] = date('y-m-d',time());
               $result = Role::create($input);
               // $token = JWTAuth::fromUser($input);
@@ -141,14 +141,12 @@ class LoginController extends BaseController
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-      File::delete(public_path().'/photo/bgimg/'.$moka.'.jpg');
-      File::delete(public_path().'/photo/bgimg/'.$moka.'.jpeg');
-      File::delete(public_path().'/photo/bgimg/'.$moka.'.png');
-      $file->move( public_path().'/photo/bgimg/',$moka.".".$file->getClientOriginalExtension());
+      $end = 'bg/'.$moka.".".$file->getClientOriginalExtension();
+      QiniuController::update($file,$end);
       $object = Role::find($id);
-      $input['bgimg'] = $_SERVER['HTTP_HOST']."/photo/bgimg/".$moka.".".$file->getClientOriginalExtension();
+      $input['bgimg'] = 'http://os3h4gw7b.bkt.clouddn.com/'.$end;
       $result = $object->update($input);
-      $result = $this->returnMsg('200',"ok",$result);
+      $result = $this->returnMsg('200',"ok",$input['bgimg']);
       return response()->json($result);
     }
     //上传头像
@@ -161,14 +159,12 @@ class LoginController extends BaseController
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-      File::delete(public_path().'/photo/head/'.$moka.'.jpg');
-      File::delete(public_path().'/photo/head/'.$moka.'.jpeg');
-      File::delete(public_path().'/photo/head/'.$moka.'.png');
-      $file->move( public_path().'/photo/head/',$moka.".".$file->getClientOriginalExtension());
+      $end = 'head/'.$moka.".".$file->getClientOriginalExtension();
+      QiniuController::update($file,$end);
       $object = Role::find($id);
-      $input['head'] = $_SERVER['HTTP_HOST']."/photo/head/".$moka.".".$file->getClientOriginalExtension();
+      $input['head'] = 'http://os3h4gw7b.bkt.clouddn.com/'.$end;
       $result = $object->update($input);
-      $result = $this->returnMsg('200',"ok",$result);
+      $result = $this->returnMsg('200',"ok",$input['head']);
       return response()->json($result);
     }
     //选择角色
