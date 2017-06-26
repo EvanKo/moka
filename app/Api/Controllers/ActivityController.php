@@ -25,73 +25,122 @@ class ActivityController extends BaseController
         parent::__construct();
     }
 
-    //发活动
-    public function make(Request $request){
-      $this->validate($request, [
-        'img' => 'Image',
-        'title' => 'required',
-        'content' => 'required'
-      ]);
-      $img = $request->file('img',null);
-      $content = $request->input('content',null);
-      $title = $request->input('title',null);
+    //开始编辑摩卡
+    public function start(Request $request){
       $role = JWTAuth::toUser();
-      $moka = $role['moka'];
-      if ($img != null) {
-        $root = public_path().'/photo/activity/'.$moka.'/';
-        $root2 = '/photo/activity/'.$moka.'/';
-        if(!file_exists($root)){
-          mkdir($root);
+      $object = DB::table('Activities')
+        ->where('moka',$role['moka'])
+        ->where('finish','0')
+        ->get();
+      if ($object->count() != 0) {
+          $photo  = DB::table('Activities')
+            ->where('moka',$role['moka'])
+            ->where('finish','0')
+            ->orderBy('id','desc')
+            ->limit(1)
+            ->pluck('id');
+          $photos = DB::table('Photos')
+            ->where('mokaid',$photo)
+            ->where('act',1)
+            ->orderBy('imgnum')
+            ->select('id','Photos.imgnum','Photos.img_s')
+            ->get();
+          $activity = DB::table('Activities')
+            ->where('moka',$role['moka'])
+            ->where('finish','0')
+            ->orderBy('id','desc')
+            ->limit(1)
+            ->get();
+          $result['photos'] = $photos;
+          $result['activity'] = $activity;
+          $result = $this->returnMsg('200',"ok",$result);
+          return response()->json($result);
         }
-        $num = md5(time()).".".$img->getClientOriginalExtension();
-        $img->move( $root,$num);
-        $input['img'] = $_SERVER['HTTP_HOST'].$root2.$num;
-      }
-      $input['content'] = $content;
-      $input['moka'] = $moka;
-      $input['title'] = $title;
-      // $input['pass'] = '1';
-      $input['area'] = $role['area'];
+      $input['area']=$role['area'];
+      $input['moka']=$role['moka'];
+      $input['local']=$role['province'].$role['city'];
+      $input['img'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
       $result = Activity::create($input);
-      // $result = json_decode($result,true);
-      // $input['target_id'] = $result['id'];
-      // $input['target'] = 4;
-      // $result = Record::create($input);
-      $result = $this->returnMsg('200',"ok",$result);
+      $num = json_decode($result,true);
+      $num = $num['id'];
+      $root = public_path().'/photo/activity/'.$num.'/';
+      if(!file_exists($root)){
+        mkdir($root);
+      }
+      $result = $this->returnMsg('200',"activity id:".$num,$num);
       return response()->json($result);
     }
-    //删除活动
+
+    //删除或取消通告
     public function delete(Request $request){
       $role = JWTAuth::toUser();
-      $id = $request->input('id',null);
-      if ($id == null) {
-        $result = $this->returnMsg('500',"id require");
-        return response()->json($result);
+      $this->validate($request,[
+        'id'=>'required',
+      ]);
+      $mokaid = $request->input('id',null);
+
+      DB::table('Photos')
+        ->where('mokaid',$mokaid)
+        ->where('act',1)
+        ->delete();
+      $root = public_path().'/photo/activity/'.$mokaid.'/';
+      if(file_exists($root)){
+        ActivityController::deldir($root);
       }
-      $first = $record = DB::table('Activities')
-        ->where('id',$id)
-        ->where('moka',$role['moka']);
-      $object = $first->get();
-      if ($object->count() == 0) {
-        $result = $this->returnMsg('500',"id error");
-        return response()->json($result);
-      }
-      // $record = DB::table('Records')
-      //   ->where('target_id',$id)
-      //   ->where('target',4)
-      //   ->delete();
-      $object = json_decode($object,true);
-      $object = $object[0];
-      $num = $object['img'];
-      if ($num != '') {
-        $num = trim($num,$_SERVER['HTTP_HOST']);
-        File::delete(public_path().$num);
-      }
-      AppreciateController::deleall(4,$object['id']);
-      CommentController::deleall(4,$object['id']);
-      $result =  $first->delete();
-      $result = $this->returnMsg('200',"ok",$result);
+      DB::table('Activities')
+        ->where('id',$mokaid)
+        ->delete();
+      $result = $this->returnMsg('200',"deleted");
       return response()->json($result);
+    }
+
+    //保存
+    public function save(Request $request){
+      $role = JWTAuth::toUser();
+      $this->validate($request,[
+        'id'=>'required',
+        'title'=>'required',
+        'type'=>'required',
+        'content'=>'required',
+        'start'=>'required|date',
+        'end'=>'required|date',
+        'price'=>'required|Numeric',
+      ]);
+      $id = $request->input('id',null);
+      $activity = DB::table('Activities')->where('id',$id);
+      $finish = $activity->pluck('finish');
+      if ($finish[0] == 1) {
+        $result = $this->returnMsg('500','activity haved saved');
+        return response()->json($result);
+      }
+      $activity->update($request->all());
+      $activity->update(['finish'=>1]);
+      $result = $this->returnMsg('200','saved');
+      return response()->json($result);
+
+    }
+
+    protected static function deldir($dir) {
+      //先删除目录下的文件：
+      $dh=opendir($dir);
+      while ($file=readdir($dh)) {
+        if($file!="." && $file!="..") {
+          $fullpath=$dir."/".$file;
+          if(!is_dir($fullpath)) {
+              unlink($fullpath);
+          } else {
+              deldir($fullpath);
+          }
+        }
+      }
+
+      closedir($dh);
+      //删除当前文件夹：
+      if(rmdir($dir)) {
+        return true;
+      } else {
+        return false;
+      }
     }
 
     //地区活动
@@ -100,25 +149,24 @@ class ActivityController extends BaseController
         $area = $role['area'] == null ? 1:$role['area'];
         $page = $request->input('page',1);
         $area = $request->input('area',$area);
+        $type = $request->input('type',null);
         $record = DB::table('Activities')
           ->where('area',$area)
+          ->where('finish',1);
+        if ($type != null) {
+          $record = $record->where('type',$type);
+        }
+          $record = $record->orderBy('id','desc')
           // ->where('pass','1')
-          ->orderBy('id','desc')
           ->skip(($page-1)*10)
           ->limit(10)
-          ->select('img','area','content','moka')
+          ->select('img','area','type','view','id','title','price')
           ->get();
-        $flows = json_decode($record,true);
-        $num = 0;
         if ($record->count() == 0) {
           $result = $this->returnMsg('200','bottum');
           return response()->json($result);
         }
-        foreach ($flows as $key ) {
-             $row[$num]['data'] = $key;
-             $row[$num++]['author'] = CommonController::self($key['moka']);
-         }
-        $result = $this->returnMsg('200','ok',$row);
+        $result = $this->returnMsg('200','ok',$record);
         return response()->json($result);
     }
 }

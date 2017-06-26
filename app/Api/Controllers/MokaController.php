@@ -43,7 +43,7 @@ class MokaController extends BaseController
             ->where('finish','0')
             ->orderBy('id','desc')
             ->limit(1)
-            ->select('Mokaid','imgrealnum','imgnum')
+            ->select('Mokaid','imgrealnum','imgnum','size')
             ->get();
           $result['photos'] = $photos;
           $result['moka'] = $moka;

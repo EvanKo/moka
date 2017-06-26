@@ -6,5 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Activity extends Model
 {
-      protected $fillable = array('moka','img','title','area','content','view','pass');
+      protected $table = 'Activities';
+      protected $fillable = array('moka','img','type','title','area','content','view','pass',
+      'finish','price','start','end','local');
 }

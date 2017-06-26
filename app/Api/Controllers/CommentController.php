@@ -41,6 +41,53 @@ class CommentController extends BaseController
       $input['answer'] = $answer;
       $input['head'] = $role['head'];
       $input['answername'] = $answername;
+      $create = DB::table('Records')
+        ->where('target',$target)
+        ->where('target_id',$target_id);
+        if ($create->get()->count() == 0) {
+          $result = $this->returnMsg('500','error target');
+          return response()->json($result);
+        }
+        $create = $create
+        ->pluck('moka');
+      $input['to'] = $create[0];
+      // return strval(JWTAuth::getToken());
+      if ($create[0] == $input['author']) {
+        		$message = [
+                  'type'=>'comment',
+        					'from'=>$moka,
+                  'to'=>$input['to'],
+        					'token'=>strval(JWTAuth::getToken()),
+        					'time'=>date('Y-m-s H:i:s')];
+        		// 建立连接，@see http://php.net/manual/zh/function.stream-socket-client.php
+        		$client = stream_socket_client('tcp://127.0.0.1:7273', $errno, $errmsg, 1);
+        		if(!$client)exit("can not connect");
+        		// // 模拟超级用户，以文本协议发送数据，注意Text文本协议末尾有换行符（发送的数据中最好有能识别超级用户的字段），这样在Event.php中的onMessage方法中便能收到这个数据，然后做相应的处理即可
+        		 fwrite($client,json_encode($message)."\n");
+            //  return 'ok';
+      }
+      else {
+        $message = [
+              'type'=>'comment',
+              'from'=>$moka,
+              'to'=>$input['to'],
+              'token'=>strval(JWTAuth::getToken()),
+              'time'=>date('Y-m-s H:i:s')];
+        // 建立连接，@see http://php.net/manual/zh/function.stream-socket-client.php
+        $client = stream_socket_client('tcp://127.0.0.1:7273', $errno, $errmsg, 1);
+        if(!$client)exit("can not connect");
+        // // 模拟超级用户，以文本协议发送数据，注意Text文本协议末尾有换行符（发送的数据中最好有能识别超级用户的字段），这样在Event.php中的onMessage方法中便能收到这个数据，然后做相应的处理即可
+         fwrite($client,json_encode($message)."\n");
+         $message2 = [
+               'type'=>'comment',
+               'from'=>$moka,
+               'to'=>$input['answer'],
+               'token'=>strval(JWTAuth::getToken()),
+               'time'=>date('Y-m-s H:i:s')];
+         // 建立连接，@see http://php.net/manual/zh/function.stream-socket-client.php
+         // // 模拟超级用户，以文本协议发送数据，注意Text文本协议末尾有换行符（发送的数据中最好有能识别超级用户的字段），这样在Event.php中的onMessage方法中便能收到这个数据，然后做相应的处理即可
+          fwrite($client,json_encode($message2)."\n");
+      }
       $result = Comment::create($input);
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
@@ -64,22 +111,48 @@ class CommentController extends BaseController
     }
     //动态列表只显示前两条
     public static function two($target,$target_id){
-      $query = 'select * from comments where target = \''.$target.'\' and target_id =\''.$target_id.'\' limit 0,2';
-      $result = DB::select($query);
+      $data = DB::table('Comments')
+        ->where('target',$target)
+        ->where('target_id',$target_id);
+      $result['sum'] = $data->get()->count();
+      $result['comment'] = $data->limit(2)->get();
       return $result;
     }
     //评论列表，加载所有评论，每次请求10条
     public function list(Request $request){
-      $target = $request->input('kind',null);
-      $target_id = $request->input('key',null);
+      $target = $request->input('target',null);
+      $target_id = $request->input('target_id',null);
       $page = $request->input('page',1);
       if ($target == null || $target_id == null) {
         $result = $this->returnMsg('500','request error');
         return response()->json($result);
       }
       $page = ($page-1)*10;
-      $query = 'select * from comments where target = \''.$target.'\' and target_id =\''.$target_id.'\' limit '.$page.',10';
-      $result = DB::select($query);
+      $result = DB::table('Comments')
+        ->where('target',$target)
+        ->where('target_id',$target_id)
+        ->skip($page)
+        ->limit(10)
+        ->get();
+      if ($result == null) {
+        $result = $this->returnMsg('200','The end');
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
+    }
+    //评论列表，加载所有评论，每次请求10条
+    public function my(Request $request){
+      $role = JWTAuth::touser();
+      $moka = $request->get('moka',$role['moka']);
+      $page = $request->input('page',1);
+      $page = ($page-1)*10;
+      $result = DB::table('Comments')
+        ->where('to',$moka)
+        ->orwhere('answer',$moka)
+        ->skip($page)
+        ->limit(10)
+        ->get();
       if ($result == null) {
         $result = $this->returnMsg('200','The end');
         return response()->json($result);

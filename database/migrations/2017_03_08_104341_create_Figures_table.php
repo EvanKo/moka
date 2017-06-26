@@ -26,7 +26,7 @@ class CreateFiguresTable extends Migration
             $table->timestamps();
         });
     }
-  
+
     /**
      * Reverse the migrations.
      *
@@ -34,6 +34,6 @@ class CreateFiguresTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('modols');
+        Schema::dropIfExists('Figures');
     }
 }

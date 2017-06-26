@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Role;
 use App\Figure;
+use App\Friend;
 use App\Property;
 use JWTAuth;
 use TopClient;
@@ -56,19 +57,23 @@ class LoginController extends BaseController
               $input['tel'] = $tel;
               $input['password']=sha1($password);
               $input['moka'] = $mokanum;
+              $input['frienda'] = $mokanum;
+              $input['friendb'] = $mokanum;
               $input['name'] = $name;
               $input['sex'] = $sex;
-              $input['head'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
+              $input['head'] = 'http://os3h4gw7b.bkt.clouddn.com/head/timg.jpeg';
               $input['lastest'] = date('y-m-d',time());
               $result = Role::create($input);
+              // $token = JWTAuth::fromUser($input);
               $result = Property::create($input);
-              $result = $this->returnMsg('200',"ok",$result);
+              $result = Friend::create($input);
+              $result = $this->returnMsg('200',"ok");
               return response()->json($result);
           }
           $result = $this->returnMsg('500',"TEL HAVE EXISTED");
           return response()->json($result);
         }
-        $result = $this->returnMsg('500','num error');
+        $result = $this->returnMsg('500','tel error');
         return response()->json($result);
       }
       $result = $this->returnMsg('500','num error');
@@ -92,7 +97,7 @@ class LoginController extends BaseController
           }
           $data = DB::table('Roles')
           ->where('tel',$tel)
-          ->select('id','name','province','city','sex')
+          ->select('id','name','province','city','sex','head','v','moka','role')
           ->get();
           $last['now'] = time();
           $last['secret'] = "wearevtmers";
@@ -109,8 +114,22 @@ class LoginController extends BaseController
       return response()->json($result);
     }
     //上传资料
-    public function update(){
-
+    public function update(Request $request){
+      $role = JWTAuth::toUser();
+      $this->validate($request, [
+        'name' => 'required',
+        'area' => 'required|Numeric',
+        'province' => 'required',
+        'city' => 'required',
+        'office' => 'required',
+        'intro' => 'required',
+        'workexp' => 'required',
+      ]);
+      $result = DB::table('Roles')
+        ->where('id',$role['id'])
+        ->update($request->all());
+      $result = $this->returnMsg('200','ok',$result);
+      return response()->json($result);
     }
     //上传头像
     public function bgUpdate(Request $request){
@@ -122,14 +141,12 @@ class LoginController extends BaseController
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-      File::delete(public_path().'/photo/bgimg/'.$moka.'.jpg');
-      File::delete(public_path().'/photo/bgimg/'.$moka.'.jpeg');
-      File::delete(public_path().'/photo/bgimg/'.$moka.'.png');
-      $file->move( public_path().'/photo/bgimg/',$moka.".".$file->getClientOriginalExtension());
+      $end = 'bg/'.$moka.".".$file->getClientOriginalExtension();
+      QiniuController::update($file,$end);
       $object = Role::find($id);
-      $input['bgimg'] = $_SERVER['HTTP_HOST']."/photo/bgimg/".$moka.".".$file->getClientOriginalExtension();
+      $input['bgimg'] = 'http://os3h4gw7b.bkt.clouddn.com/'.$end;
       $result = $object->update($input);
-      $result = $this->returnMsg('200',"ok",$result);
+      $result = $this->returnMsg('200',"ok",$input['bgimg']);
       return response()->json($result);
     }
     //上传头像
@@ -137,19 +154,17 @@ class LoginController extends BaseController
       $root = JWTAuth::toUser();
       $id = $root['id'];
       $moka = $root['moka'];
-      $file = $request->file('head',null);
+      $file = $request->file('img',null);
       if ($file == null) {
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-      File::delete(public_path().'/photo/head/'.$moka.'.jpg');
-      File::delete(public_path().'/photo/head/'.$moka.'.jpeg');
-      File::delete(public_path().'/photo/head/'.$moka.'.png');
-      $file->move( public_path().'/photo/head/',$moka.".".$file->getClientOriginalExtension());
+      $end = 'head/'.$moka.".".$file->getClientOriginalExtension();
+      QiniuController::update($file,$end);
       $object = Role::find($id);
-      $input['head'] = $_SERVER['HTTP_HOST']."/photo/head/".$moka.".".$file->getClientOriginalExtension();
+      $input['head'] = 'http://os3h4gw7b.bkt.clouddn.com/'.$end;
       $result = $object->update($input);
-      $result = $this->returnMsg('200',"ok",$result);
+      $result = $this->returnMsg('200',"ok",$input['head']);
       return response()->json($result);
     }
     //选择角色
@@ -212,6 +227,24 @@ class LoginController extends BaseController
       $result = $this->returnMsg('500','num error');
       return response()->json($result);
     }
+    //忘记密码
+    public function changepassword(Request $request){
+      $role = JWTAuth::toUser();
+      $this->validate($request, [
+        'old' => 'required',
+        'new' => 'required',
+      ]);
+      $old = $request->input('old');
+      $new = $request->input('new');
+      if ($role['password'] == sha1($old)) {
+        DB::table('Roles')->where('id',$role['id'])
+          ->update(['password'=>sha1($new)]);
+        $result = $this->returnMsg('200','new password:'.$new,$new);
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('500','old password error');
+      return response()->json($result);
+    }
     //短信
     public function message($num,$tel){
     	$c = new TopClient();
@@ -237,7 +270,8 @@ class LoginController extends BaseController
 
     public function sessionSet(Request $request){
       $time = strtotime(date('Y-m-d H:i:s',time()));//integer
-      $time = $time%10000;
+      $time = $time%100;
+      $time = rand(1,9)*1000 + $time;
       $value = array ('lastip'=>$_SERVER['REMOTE_ADDR'],'tel'=>$request->input('tel'));
       $num = 'k'.strval($time);
       Session::put($num, $value);
@@ -249,19 +283,7 @@ class LoginController extends BaseController
       return response()->json($result);
     }
     public function check(Request $request){
-      $num = $request->input('num');
-      $num = 'k'.strval($num);
-      $value = Session::get($num, 'default');
-      // return $value;
-      if ($value != 'default') {
-
-          Session::forget($num);
-
-          $result = $this->returnMsg('200','ok',$value);
-          return response()->json(compact('result'));
-      }
-        $result = $this->returnMsg('52002','ERROR CODE');
-        return response()->json($result);
+      return session::all();
     }
     //搜索
     public function search(Request $request){
@@ -350,6 +372,15 @@ class LoginController extends BaseController
       $result = $this->returnMsg('200','ok',$result);
       return response()->json($result);
 
+    }
+    //验证号码
+    protected function phonechecks(Request $request){
+      if(LoginController::phonecheck($request->input('tel'))){
+        $result = $this->returnMsg('200','new tel');
+        return response()->json($result);
+      }
+      $result = $this->returnMsg('500','tel EXISTED');
+      return response()->json($result);
     }
 
 }

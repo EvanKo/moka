@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Role extends Model
 {
+      protected $table = 'Roles';
       protected $fillable = array('tel','moka'
       ,'login'
       ,'level'
@@ -23,5 +24,7 @@ class Role extends Model
       ,'bgimg'
       ,'password'
       ,'intro'
+      ,'workexp'
+      ,'office'
       ,'area');
 }
