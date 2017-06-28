@@ -61,7 +61,7 @@ class LoginController extends BaseController
               $input['friendb'] = $mokanum;
               $input['name'] = $name;
               $input['sex'] = $sex;
-              $input['head'] = 'http://os3h4gw7b.bkt.clouddn.com/head/timg.jpeg';
+              $input['head'] = 'head/timg.jpeg';
               $input['lastest'] = date('y-m-d',time());
               $result = Role::create($input);
               // $token = JWTAuth::fromUser($input);
@@ -144,7 +144,7 @@ class LoginController extends BaseController
       $end = 'bg/'.$moka.".".$file->getClientOriginalExtension();
       QiniuController::update($file,$end);
       $object = Role::find($id);
-      $input['bgimg'] = 'http://os3h4gw7b.bkt.clouddn.com/'.$end;
+      $input['bgimg'] = ''.$end;
       $result = $object->update($input);
       $result = $this->returnMsg('200',"ok",$input['bgimg']);
       return response()->json($result);
@@ -159,10 +159,10 @@ class LoginController extends BaseController
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-      $end = 'head/'.$moka.".".$file->getClientOriginalExtension();
+      $end = 'mokahead/'.$moka.".".$file->getClientOriginalExtension();
       QiniuController::update($file,$end);
       $object = Role::find($id);
-      $input['head'] = 'http://os3h4gw7b.bkt.clouddn.com/'.$end;
+      $input['head'] = ''.$end;
       $result = $object->update($input);
       $result = $this->returnMsg('200',"ok",$input['head']);
       return response()->json($result);

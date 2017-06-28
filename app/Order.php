@@ -14,5 +14,9 @@ class Order extends Model
   ,'content'
   ,'img'
   ,'imgnum'
+  ,'lasting'
+  ,'reserved'
+	,'finish'
+  ,'area'
 );
 }

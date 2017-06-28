@@ -16,6 +16,7 @@ use App\Order;
 use JWTAuth;
 use DB;
 use File;
+use App
 
 class PayController extends BaseController
 {
@@ -98,7 +99,16 @@ class PayController extends BaseController
 			return $this->returnMsg('500','wechat not bind');
 		}
 	}
-
+	//摄影师支付约拍
+	public function payDatePhoto(Request $request)
+	{
+		$user_data = JWTAuth::toUser();
+		$mokaid = $user_data['moka'];
+		$check = $this->checkBindWechat($mokaid);
+		if($check){
+		}
+	}
+	//提现
 	public function getCash(Request $request)
 	{
 		$money = $request->input('money');
@@ -119,6 +129,8 @@ class PayController extends BaseController
 		}
 	}
 
+	
+	//检查用户余额是否够
 	public function checkMoney($mokaid,$money)
 	{
 		$data = DB::table('Roles')->where('moka','=',$mokaid)->first();
@@ -131,6 +143,7 @@ class PayController extends BaseController
 		}
 	}
 
+	//获取用户微信openid
 	public function getOpenId($mokaid)
 	{
 		$wechatdata = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
@@ -140,10 +153,10 @@ class PayController extends BaseController
 			return false;
 		}
 	}
-
+	//检查微信绑定
 	public function checkBindWechat($mokaid)
 	{
-		$check = DB::tables('wechat')->where('mokaid','=',$mokaid)->first();
+		$check = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
 		if($check->count()){
 			return true;
 		}

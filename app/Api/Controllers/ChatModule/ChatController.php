@@ -33,7 +33,9 @@ class ChatController extends BaseController
 
 		$records = DB::table('ChatRecords')->where('to','=',$moka_id)->get();//unreadMsg:$moka_id 未读消息集合
 		if($records->count()){
-			return $this->returnMsg('200','ok',['MsgNum'=>$records->count(),'records'=>$records]);
+			$data = $records;
+			$records->delete();
+			return $this->returnMsg('200','ok',['MsgNum'=>$records->count(),'records'=>$data]);
 		}
 		else{
 			return $this->returnMsg('404','Unread message not found');

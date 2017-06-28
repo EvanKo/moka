@@ -111,4 +111,114 @@ class MainpageController extends BaseController
       $result = $this->returnMsg('200','ok',$record);
       return response()->json($result);
     }
+    //我的订单，通告
+    public function activity(Request $request){
+      $role = JWTAuth::toUser();
+      $page = $request->input('page',1);
+      $moka = $request->input('moka',$role['moka']);
+      $result = DB::table('Status')
+        // ->leftjoin('Activities','Activities.id','=','Status.target_id')
+        ->whereRaw('target = 4 and (boss = '.$moka.' or customer = '.$moka.')');
+        if ($result->get()->count() == 0) {
+          $result = $this->returnMsg('200','ok');
+          return response()->json($result);
+        }
+        $result = $result
+        ->pluck('target_id');
+      $result = DB::table('Activities')
+        ->where('id',$result)
+        ->orwhere('moka',$role['moka'])
+        ->orderBy('id','desc')
+        ->skip(($page-1)*6)
+        ->select('id','moka','img','type','view','title','price')
+        ->limit(6)
+        ->get();
+        $number = 0;
+        $result = json_decode($result,true);
+        foreach ($result as $key) {
+          $output[$number]=$key;
+          if ($key['moka'] == $role['moka']) {
+            $output[$number++]['owner']=1;
+          }
+          else {
+            $output[$number++]['owner']=0;
+          }
+        }
+        $result = $this->returnMsg('200','ok',$output);
+        return response()->json($result);
+    }
+    public function yue(Request $request){
+      $role = JWTAuth::toUser();
+      $this->validate($request,[
+        'choose'=>'required|Numeric'
+      ]);
+      $choose = $request->input('choose');
+      $page = $request->input('page',1);
+      $moka = $request->input('moka',$role['moka']);
+      $result = DB::table('Status')
+        ->leftjoin('Orders','Orders.id','=','Status.target_id')
+        ->where('Status.target',2)
+        ->where('Status.yue',1);
+      $output = array();
+      if ($choose == 1) {
+        $result = $result->where('Status.boss',$moka);
+        $result = $result
+        ->select('Status.id','Status.reserved','Status.customer','Status.boss','Status.target_id','Orders.price','Status.status')
+        ->skip(($page-1)*9)
+        ->limit(9)
+        ->get();
+        $number = 0;
+        $result = json_decode($result,true);
+
+        foreach ($result as $key) {
+          $output[$number]=$key;
+          $output[$number]['customer'] = DB::table('Roles')
+            ->where('moka',$output[$number]['customer'])
+            ->select('id','name','head')
+            ->first();
+            $output[$number]['boss']['id'] = $role['id'];
+            $output[$number]['boss']['head'] = $role['head'];
+          $output[$number++]['boss']['name'] = $role['name'];
+        }
+      }
+      else {
+        $result = $result->where('Status.customer',$moka);
+        $result = $result
+        ->select('Status.id','Status.reserved','Status.customer','Status.boss','Status.target_id','Orders.price','Status.status')
+        ->skip(($page-1)*9)
+        ->limit(9)
+        ->get();
+        $number = 0;
+        $result = json_decode($result,true);
+
+        foreach ($result as $key) {
+          $output[$number]=$key;
+          $output[$number]['boss'] = DB::table('Roles')
+            ->where('moka',$output[$number]['boss'])
+            ->select('id','name','head')
+            ->first();
+            $output[$number]['customer'] = array();
+            $output[$number]['customer']['id'] = $role['id'];
+            $output[$number]['customer']['head'] = $role['head'];
+          $output[$number++]['customer']['name'] = $role['name'];
+        }
+      }
+
+        $result = $this->returnMsg('200','ok',$output);
+        return response()->json($result);
+    }
+    public function order(Request $request){
+      $role = JWTAuth::toUser();
+      $page = $request->input('page',1);
+      $moka = $request->input('moka',$role['moka']);
+      $target = $request->input('target');
+      $result = DB::table('Status')
+        ->where('target',$target)
+        ->where('boss',$moka)
+        ->skip(($page-1)*9)
+        ->limit(9)
+        ->get();
+        $result = $this->returnMsg('200','ok',$result);
+        return response()->json($result);
+    }
 }

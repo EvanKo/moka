@@ -7,6 +7,7 @@ use DB;
 use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
 use App\Api\Controllers\CommentController;
+use App\Api\Controllers\QiniuController;
 use Illuminate\Support\Facades\Session;
 use Curl\Curl;
 use Illuminate\Http\Request;
@@ -33,18 +34,18 @@ class MomentController extends BaseController
         $result = $this->returnMsg('500',"IMG NOT UPLOAD");
         return response()->json($result);
       }
-	  $root = public_path().'/photo/moment/';
-	  if(!file_exists($root)){
-	  	mkdir($root);
-	  }
-	  $root = $root.$moka.'/';
-      $root2 = '/photo/moment/'.$moka.'/';
-      if(!file_exists($root)){
-        mkdir($root);
-      }
       $num = md5(time()).".".$img->getClientOriginalExtension();
-      $img->move( $root,$num);
-      $input['img'] = $_SERVER['HTTP_HOST'].$root2.$num;
+
+      $end = 'moment'.$role['moka'].$num;
+
+      $sending = QiniuController::update($img,$end);
+      if ($sending == 500) {
+        $result = $this->returnMsg('500',"upload failed");
+        return response()->json($result);
+      }
+      $input = $request->all();
+      $input['img'] = ''.$end;
+
       $input['imgnum'] = $num;
       $input['content'] = $content;
       $input['moka'] = $moka;
@@ -53,7 +54,7 @@ class MomentController extends BaseController
       $result = json_decode($result,true);
       $input['target_id'] = $result['id'];
       $input['target'] = 1;
-      $result = Record::create($input);
+      $result1 = Record::create($input);
       $result = $this->returnMsg('200',"ok",$result);
       return response()->json($result);
     }
@@ -65,7 +66,7 @@ class MomentController extends BaseController
         $result = $this->returnMsg('500',"momentid require");
         return response()->json($result);
       }
-      $first = $record = DB::table('Moments')
+      $first = DB::table('Moments')
         ->where('id',$id)
         ->where('moka',$role['moka']);
       $object = $first->get();
@@ -73,14 +74,19 @@ class MomentController extends BaseController
         $result = $this->returnMsg('500',"momentid error");
         return response()->json($result);
       }
+      $object = json_decode($object,true);
+      $object = $object[0];
+      $moka = $object['moka'];
+      if ($moka != $role['moka']) {
+        $result = $this->returnMsg('500',"not your moment");
+        return response()->json($result);
+      }
       $record = DB::table('Records')
         ->where('target_id',$id)
         ->where('target',1)
         ->delete();
-      $object = json_decode($object,true);
-      $object = $object[0];
-      $moka = $object['moka'];
-      File::delete(public_path().'/photo/moment/'.$moka.'/'.$object['imgnum']);
+      $img = $object['img'];
+      QiniuController::deleteall($img);
       AppreciateController::deleall(1,$object['id']);
       CommentController::deleall(1,$object['id']);
       $result =  $first->delete();

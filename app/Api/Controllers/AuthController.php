@@ -3,6 +3,7 @@ namespace App\Api\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Api\Controllers\QiniuController;
 use Illuminate\Foundation\Testing\TestCase;
 use JWTAuth;
 use App\Auth;
@@ -37,30 +38,23 @@ class AuthController extends BaseController
        ]);
        $img = $request->File('img');
        if ($auth->get()->count() == 0) {
-         $root = public_path().'/photo/auth/';
-         if(!file_exists($root)){
-            mkdir($root);
-          }
           $num = $moka.".".$img->getClientOriginalExtension();
-          $img->move($root,$num);
-          $imgaddr = $_SERVER['HTTP_HOST'].'/photo/auth/'.$num;
+          $end = 'mokaauth'.$num;
+          QiniuController::update($img,$end);
+          $object = Role::find($id);
           $input = $request->all();
-          $input['img'] = $imgaddr;
+          $input['img'] = ''.$end;
           $input['moka'] = $role['moka'];
           $result = Auth::create($input);
          $result = $this->returnMsg('200',"ok",$result);
          return response()->json($result);
        }
        else {
-         $root = public_path().'/photo/auth/';
-         if(!file_exists($root)){
-            mkdir($root);
-          }
-          $num = $moka.".".$img->getClientOriginalExtension();
-          $img->move($root,$num);
-          $imgaddr = $_SERVER['HTTP_HOST'].'/photo/auth/'.$num;
+         $num = $moka.".".$img->getClientOriginalExtension();
+         $end = 'mokaauth'.$num;
+         QiniuController::update($img,$end);
           $input = $request->all();
-          $input['img'] = $imgaddr;
+          $input['img'] = ''.$end;
          $result = $auth
             ->update($input);
           $result = $this->returnMsg('200',"changed",$result);

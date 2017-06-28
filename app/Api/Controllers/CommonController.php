@@ -15,6 +15,7 @@ use App\Order;
 use App\Moment;
 use App\Moka;
 use App\Activity;
+use App\Record;
 use JWTAuth;
 use DB;
 
@@ -40,7 +41,7 @@ class CommonController extends BaseController
       }
       $moment = DB::table('Moments')->where('id',$id)
         ->select('id','moka','content','img','view','created_at');
-      if ($moment->count() == 0) {
+      if ($moment->get()->count() == 0) {
         $result = $this->returnMsg('500','id error');
         return response()->json($result);
       }
@@ -124,6 +125,7 @@ class CommonController extends BaseController
     }
     //活动详情
     public function activity(Request $request){
+      $role = JWTAuth::toUser();
       $id = $request->input('id',null);
       if ($id == null) {
         $result = $this->returnMsg('500','request error');
@@ -140,10 +142,42 @@ class CommonController extends BaseController
       $data = $data[0];
       $data['view'] += 1;
       $activity->update(['view'=>$data['view']]);
-      $data['photo'] = DB::table('Photos')->where('mokaid',$id)
+      if ($data['moka'] == $role['moka']) {
+        $result['owner'] = 1;
+      }
+      else {
+        $result['owner'] = 0;
+      }
+      DB::table('Records')
+        ->where('target',4)
+        ->where('target_id',$id)
+        ->update(['view'=>$data['view']]);
+      $result['photo'] = DB::table('Photos')->where('mokaid',$id)
         ->where('act',1)
         ->orderBy('imgnum')
         ->select('id','img_l','imgnum')
+        ->get();
+      $join = DB::table('Status')
+        ->where('target',4)
+        ->where('target_id',$id);
+      $result['join']['num'] = $join
+          ->get()
+          ->count();
+      $you = $join->where('customer',$role['moka']);
+        if ($you->get()->count() != 0 ) {
+            $you = $you->pluck('status');
+            $result['join']['status'] = $you[0];
+        }
+        else {
+          $result['join']['status'] = 0;
+        }
+      $result['join']['people'] = DB::table('Status')
+        ->leftjoin('Roles','Roles.moka','=','Status.customer')
+        ->where('Status.target',4)
+        ->where('Status.target_id',$id)
+        ->orderBy('Status.id','desc')
+        ->limit(9)
+        ->select('Roles.id','Roles.moka','Roles.head')
         ->get();
       $zan = AppreciateController::list(4,$id,10);
       $result['zan'] = $zan;

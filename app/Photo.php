@@ -16,6 +16,7 @@ class Photo extends Model
       ,'img_lnum'
       ,'fee'
       ,'view'
-      ,'act'
+	  ,'act'
+	  ,'moka'
       );
 }

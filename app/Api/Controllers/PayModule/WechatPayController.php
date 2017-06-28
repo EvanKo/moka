@@ -108,14 +108,39 @@ class WechatPayController extends BaseController
 			Log::warning('user'.$openid.' fail to pay');
 		}
 	}	
-		
+	//支付约拍回调函数
+    public function dateOrderNotify(Request $request){
+		$msg = array();
+	    $postStr = file_get_contents('php://input');
+	    $msg = (array)simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+	    Log::info('msg:'.$msg['result_code']);
+	    if($msg['result_code']=='SUCCESS'){
+			//业务逻辑
+			$openid = $msg['openid'];
+			//获取订单号
+			$orderNum = Redis::get('payorder'.$msg['out_trade_no']);
+			$amount = $msg['total_fee'];
+			DB::beginTransaction();
+			$userInfo = DB::table('wechats')->where('openid','=',$openid)->first();
+			$mokaid = $userInfo->mokaid;
+			$orderInfo = DB::table('Status')->where(['customer'=>$mokaid,'target_id'=>$orderNum,'status'=>1])->first();
+			$orderInfo->update(['status'=>2]);	
+			DB::commit();
+			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+			return 'SUCCESS';
+		}else{
+			Log::warning('user'.$openid.' fail to pay');
+			return "FAIL";
+		}
+	}
 	
     public function unifiedOrder(Request $request)
 	{
 		$type = $request->input('type');
+		$orderNum = $request->input('orderID');
 
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
-        $server_url = "121.40.220.52:8760";    
+        $server_url = "121.40.220.52";    
 
         $inputObj=array();
         $inputObj['appid'] = "wxa99e4ef76debee57";//微信支付分配的公众账号ID
@@ -128,30 +153,42 @@ class WechatPayController extends BaseController
 		//从token获取用户信息
 		$token = JWTAuth::getToken();
         $user_json = JWTAuth::toUser($token);
-        $user = json_decode($user_json, true);
+		$user = json_decode($user_json, true);
 		//约定1为购买普通会员，2为高级会员,3为至尊会员,4为支付订单
 		switch($type){
-		case 1:
-        	$inputObj['notify_url']=$server_url."/api/nomalMemberNotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
-			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>1,'status'=>0])->first();
-		case 2:
-        	$inputObj['notify_url']=$server_url."/api/advanceMembernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
-			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>2,'status'=>0])->first();
-		case 3:
-        	$inputObj['notify_url']=$server_url."/api/supermeMembernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
-			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>3,'status'=>0])->first();
-		case 4:
-        	$inputObj['notify_url']=$server_url."/api/ordernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
-			$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>4,'status'=>0])->first();
+			case 1:
+				$inputObj['notify_url']=$server_url."/api/nomalMemberNotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+				$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>1,'status'=>0])->first();
+				break;
+			case 2:
+				$inputObj['notify_url']=$server_url."/api/advanceMembernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+				$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>2,'status'=>0])->first();
+				break;
+			case 3:
+				$inputObj['notify_url']=$server_url."/api/supermeMembernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+				$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>3,'status'=>0])->first();
+				break;
+			case 4:
+				$inputObj['notify_url']=$server_url."/api/ordernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+				$orderInfo = DB::table('PayRecords')->where(['moka'=>$user['moka'],'type'=>4,'status'=>0])->first();
+				break;
+			case 5:
+				$inputObj['notify_url']=$server_url."/api/dateordernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
+				$orderInfo = DB::table('Orders')->where('id','=',$orderNum)->first();
+				$userInfo = DB::table('wechats')->where('mokaid','=',$user['moka'])->first();
+				break;
+
 		}
+		$testopenid = "oSZHCuF-2t39bKrpcKztMQZqnrGc";
         $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
         
 
-        $inputObj['openid'] = $orderInfo['openid'];//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
-		$amount = $orderInfo['amount']*100;
+        $inputObj['openid'] = $userInfo->openid;//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
+		$amount = 100*$orderInfo->amount;
 	//$amount=100; //付款多少( /分）
-        $inputObj['total_fee']=$amount;//订单总金额，单位为分
+		$inputObj['total_fee']=$amount;//订单总金额，单位为分
 
+		Redis::set('payorder:'.$inputObj['out_trade_no'],$orderNum);//便于回调时找到该订单
         
         //签名
         //签名步骤一：按字典序排序参数
@@ -172,7 +209,8 @@ class WechatPayController extends BaseController
         $result = strtoupper($string);
 
         $inputObj['sign']=$result;//通过签名算法计算得出的签名值
-
+		
+		$order_flag = $inputObj['out_trade_no'];
         $xml="<xml>
                <appid><![CDATA[".$inputObj['appid']."]]></appid>
                <body><![CDATA[".$inputObj['body']."]]></body>

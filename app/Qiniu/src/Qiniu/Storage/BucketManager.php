@@ -4,6 +4,7 @@ namespace Qiniu\Storage;
 use Qiniu\Auth;
 use Qiniu\Config;
 use Qiniu\Zone;
+use Qiniu\funcotions;
 use Qiniu\Http\Client;
 use Qiniu\Http\Error;
 
@@ -34,7 +35,13 @@ final class BucketManager
     {
         return $this->rsGet('/buckets');
     }
-
+    static function setWithoutEmpty(&$array, $key, $value)
+    {
+        if (!empty($value)) {
+            $array[$key] = $value;
+        }
+        return $array;
+    }
     /**
      * 列取空间的文件列表
      *
@@ -58,10 +65,18 @@ final class BucketManager
     public function listFiles($bucket, $prefix = null, $marker = null, $limit = 1000, $delimiter = null)
     {
         $query = array('bucket' => $bucket);
-        \Qiniu\setWithoutEmpty($query, 'prefix', $prefix);
-        \Qiniu\setWithoutEmpty($query, 'marker', $marker);
-        \Qiniu\setWithoutEmpty($query, 'limit', $limit);
-        \Qiniu\setWithoutEmpty($query, 'delimiter', $delimiter);
+        if (!empty($prefix)) {
+            $query['prefix'] = $prefix;
+        }
+        if (!empty($marker)) {
+            $query['marker'] = $marker;
+        }
+        if (!empty($limit)) {
+            $query['limit'] = $limit;
+        }
+        if (!empty($delimiter)) {
+            $query['delimiter'] = $delimiter;
+        }
         $url = Config::RSF_HOST . '/list?' . http_build_query($query);
         list($ret, $error) = $this->get($url);
         if ($ret === null) {

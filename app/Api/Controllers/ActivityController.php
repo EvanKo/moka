@@ -6,6 +6,7 @@ use App\Api\Controllers\BaseController;
 use App\Api\Controllers\AppreciateController;
 use App\Api\Controllers\CommentController;
 use App\Api\Controllers\CommonController;
+use App\Api\Controllers\QiniuController;
 use Illuminate\Support\Facades\Session;
 use Curl\Curl;
 use Illuminate\Http\Request;
@@ -59,14 +60,10 @@ class ActivityController extends BaseController
       $input['area']=$role['area'];
       $input['moka']=$role['moka'];
       $input['local']=$role['province'].$role['city'];
-      $input['img'] = $_SERVER['HTTP_HOST'].'/photo/head/timg.jpeg';
+      $input['img'] = 'head/timg.jpeg';
       $result = Activity::create($input);
       $num = json_decode($result,true);
       $num = $num['id'];
-      $root = public_path().'/photo/activity/'.$num.'/';
-      if(!file_exists($root)){
-        mkdir($root);
-      }
       $result = $this->returnMsg('200',"activity id:".$num,$num);
       return response()->json($result);
     }
@@ -77,18 +74,25 @@ class ActivityController extends BaseController
       $this->validate($request,[
         'id'=>'required',
       ]);
-      $mokaid = $request->input('id',null);
-
+      $id = $request->input('id');
+      $activity = DB::table('Activities')
+        ->where('id',$id);
+        $activitymoka =$activity->pluck('moka');
+      if ($activitymoka[0]!=$role['moka']) {
+        $result = $this->returnMsg('500',"not yours");
+        return response()->json($result);
+      }
+      QiniuController::deleteall('activity'.$role['moka'].''.$id.'');
       DB::table('Photos')
-        ->where('mokaid',$mokaid)
+        ->where('mokaid',$id)
         ->where('act',1)
         ->delete();
-      $root = public_path().'/photo/activity/'.$mokaid.'/';
-      if(file_exists($root)){
-        ActivityController::deldir($root);
-      }
+      // $root = public_path().'/photo/activity/'.$id.'/';
+      // if(file_exists($root)){
+      //   ActivityController::deldir($root);
+      // }
       DB::table('Activities')
-        ->where('id',$mokaid)
+        ->where('id',$id)
         ->delete();
       $result = $this->returnMsg('200',"deleted");
       return response()->json($result);
@@ -110,11 +114,16 @@ class ActivityController extends BaseController
       $activity = DB::table('Activities')->where('id',$id);
       $finish = $activity->pluck('finish');
       if ($finish[0] == 1) {
-        $result = $this->returnMsg('500','activity haved saved');
+        $result = $this->returnMsg('500','mokaactivity haved saved');
         return response()->json($result);
       }
       $activity->update($request->all());
       $activity->update(['finish'=>1]);
+      $input['target']=4;
+      $input['target_id']=$request->input('id');
+      $input['moka']=$role['moka'];
+      $input['area']=$role['area'];
+      Record::create($input);
       $result = $this->returnMsg('200','saved');
       return response()->json($result);
 
@@ -146,7 +155,7 @@ class ActivityController extends BaseController
     //地区活动
     public function areaactivity(Request $request){
         $role = JWTAuth::toUser();
-        $area = $role['area'] == null ? 1:$role['area'];
+        $area = $role['area'] == null ? 7:$role['area'];
         $page = $request->input('page',1);
         $area = $request->input('area',$area);
         $type = $request->input('type',null);
@@ -167,6 +176,40 @@ class ActivityController extends BaseController
           return response()->json($result);
         }
         $result = $this->returnMsg('200','ok',$record);
+        return response()->json($result);
+    }
+
+    //报名管理
+    public function enroll(Request $request){
+        $role = JWTAuth::toUser();
+        $this->validate($request,[
+          'id'=>'required|Numeric'
+        ]);
+        $id = $request->input('id');
+        $page = $request->input('page',1);
+        $moka = $request->input('moka',$role['moka']);
+        $check = DB::table('Status')
+          ->where('target',4)
+          ->where('target_id',$id);
+          if ($check->get()->count() == 0) {
+            $result = $this->returnMsg('200','ok');
+            return response()->json($result);
+          }
+        $own = $check->pluck('boss');
+        if ($own[0] != $role['moka']) {
+          $result = $this->returnMsg('500','not yours');
+          return response()->json($result);
+        }
+        $customer = $check->pluck('customer');
+        $result = DB::table('Status')
+        ->leftjoin('Roles','Roles.moka','=','Status.customer')
+          // ->leftjoin('Status','Status.customer','=','Roles.moka')
+          ->where('Status.target',4)
+          ->where('Status.target_id',$id)
+          // ->where('Roles.moka',$customer)
+          ->select('Status.id','Roles.name','Roles.head','Roles.role','Status.status')
+          ->get();
+        $result = $this->returnMsg('200','ok',$result);
         return response()->json($result);
     }
 }

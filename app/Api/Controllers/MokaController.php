@@ -3,6 +3,7 @@
 namespace App\Api\Controllers;
 
 use App\Api\Controllers\BaseController;
+use App\Api\Controllers\QiniuController;
 use Illuminate\Support\Facades\Session;
 use Curl\Curl;
 use Illuminate\Http\Request;
@@ -59,10 +60,7 @@ class MokaController extends BaseController
         return $this->returnReq($imgnum,'imgnum');
       }
       $num = md5(time()).rand(1,9);
-      $root = public_path().'/photo/moka/'.$num.'/';
-      if(!file_exists($root)){
-        mkdir($root);
-      }
+      
       $input['moka'] = $role['moka'];
       $input['size'] = $size;
       $input['imgnum'] = $imgnum;
@@ -83,10 +81,11 @@ class MokaController extends BaseController
       DB::table('Photos')
         ->where('mokaid',$mokaid)
         ->delete();
-      $root = public_path().'/photo/moka/'.$mokaid.'/';
-      if(file_exists($root)){
-        MokaController::deldir($root);
-      }
+      // $root = public_path().'/photo/moka/'.$mokaid.'/';
+      // if(file_exists($root)){
+      //   MokaController::deldir($root);
+      // }
+      QiniuController::deleteall('mmoka'.$role['moka'].$id);
       DB::table('Mokas')
         ->where('mokaid',$mokaid)
         ->delete();

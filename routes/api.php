@@ -32,6 +32,7 @@ $api->version('v1', function ($api) {
 	  $api->any('advanceMembernotify', 'PayModule\WechatPayController@advancemembernotify');
 	  $api->any('supermeMembernotify', 'PayModule\WechatPayController@supermemembernotify');
 	  $api->any('ordernotify', 'PayModule\WechatPayController@ordernotify');
+	  $api->any('dateordernotify', 'PayModule\WechatPayController@dateOrderNotify');
       $api->group(['middleware' => 'jwt.api.auth'], function ($api) {
 		//充值
 		$api->post('recharge','PayModule\PayController@recharge');
@@ -56,6 +57,10 @@ $api->version('v1', function ($api) {
 	  		$api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
 	    $api->post('newGroupChat', 'ChatController@newGroupChat');
 	    $api->post('joinGroup', 'ChatController@joinGroup');
+		//发起约拍
+		$api->post('newDatePhoto','PayModule\DatePhotoController@newDatePhoto');
+		//支付约拍
+		//$api->post('payDataPhoto','PayModule\PayController@payDataPhoto');
 		    //动态
         $api->post('makemoment', 'MomentController@make');//finish img,content
         $api->post('delemoment', 'MomentController@delete');//finish momentid
@@ -74,7 +79,9 @@ $api->version('v1', function ($api) {
         $api->post('fans', 'FanController@fan');//finish page
         //主页
         $api->post('person', 'MainpageController@main');//finish
-        $api->post('selfrecord', 'CommonController@selfrecord');//finish page
+           $api->post('myactivity', 'MainpageController@activity');//finish
+		        $api->post('myyue', 'MainpageController@yue');//finish
+		$api->post('selfrecord', 'CommonController@selfrecord');//finish page
         //订单
         $api->post('makeorder', 'OrderController@make');//finish price,type,img,content
         $api->post('deleorder', 'OrderController@delete');//finish id
@@ -87,7 +94,10 @@ $api->version('v1', function ($api) {
         //ajax上传图片
         $api->post('mokaphoto', 'PhotoController@update');//finish num,img
         $api->post('photodetail', 'PhotoController@detail');//finish id
-        //附近
+		$api->post('actphoto', 'PhotoController@actupdate');//finish num,img
+		        $api->post('albumphoto', 'PhotoController@albumupdate');//finish num,img
+		        $api->post('officephoto', 'PhotoController@officeupdate');//finish num,img
+		//附近
         $api->post('near', 'CommonController@near');//finish page,area
         //好友
         $api->post('friend', 'CommonController@friend');//finish page
@@ -101,10 +111,11 @@ $api->version('v1', function ($api) {
         $api->post('startactivity', 'ActivityController@start');//finish key,page
         $api->post('deleactivity', 'ActivityController@delete');//finish key,page
         $api->post('saveactivity', 'ActivityController@save');//finish key,page
-        $api->post('actphoto', 'PhotoController@actupdate');//finish num,img
         $api->post('areaactivity', 'ActivityController@areaactivity');//finish key,page
         $api->post('activity', 'CommonController@activity');//finish id
-        //认证
+		        $api->post('enroll', 'ActivityController@enroll');//finish id
+
+		//认证
         $api->post('auth', 'AuthController@update');//finish name,company,id
         //举报
         $api->post('report', 'ReportController@report');//finish content
@@ -112,7 +123,18 @@ $api->version('v1', function ($api) {
         $api->post('changepassword', 'LoginController@changepassword');//finish content
         //执行，参加
         $api->post('startdeal', 'StatusController@start');//finish content
-
-      });
+        $api->post('handledeal', 'StatusController@handle');
+		//相册
+		$api->post('startalbum', 'AlbumController@new');
+		        $api->post('album', 'AlbumController@detail');
+		        $api->post('albumdeleteone', 'AlbumController@deleteone');
+				        $api->post('albumdeleteall', 'AlbumController@deleteall');
+				$api->post('albumlist', 'AlbumController@my');
+		//工作室
+				$api->post('startoffice', 'OfficeController@start');//finish key,page
+				        $api->post('deleoffice', 'OfficeController@delete');//finish key,page
+				        $api->post('saveoffice', 'OfficeController@save');//finish key,page
+        $api->post('office', 'OfficeController@office');//finish key,page
+	  });
     });
 });

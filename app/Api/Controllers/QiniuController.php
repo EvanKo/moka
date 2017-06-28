@@ -1,7 +1,7 @@
 <?php
 namespace App\Api\Controllers;
 
- // require_once 'qiniu/autoload.php';
+ require_once public_path().'/Qiniu/autoload.php';
  use Qiniu\Auth;
  use Qiniu\Storage\UploadManager;
  use Qiniu\Storage\BucketManager;
@@ -26,10 +26,10 @@ class QiniuController
    $uploadMgr = new UploadManager();
    // 调用 UploadManager 的 putFile 方法进行文件的上传
    list($ret, $err) = $uploadMgr->putFile($token, $key, $filePath);
-   if ($err !== null) {
-       return $err;
+   if ($err != null) {
+       return 500;
    } else {
-       return $ret;
+       return 200;
    }
  }
 
@@ -44,11 +44,11 @@ static function delete($end){
   $bucketMgr = new BucketManager($auth);
   //你要测试的空间， 并且这个key在你空间中存在
   $err = $bucketMgr->delete($bucket, $key);
-  if ($err !== null) {
-      return $err;
+  if ($err != null) {
+      return 500;
   } else {
-      return "Success!";
-    }
+      return 200;
+  }
 }
 static function small($key,$end){
 $accessKey = 'RUTxOoX5K9jJiQtef7kk4w5_uRHBFKeCw6IfETaZ';
@@ -62,10 +62,53 @@ $accessKey = 'RUTxOoX5K9jJiQtef7kk4w5_uRHBFKeCw6IfETaZ';
 
 
   list($id, $err) = $pfop->execute($key, $fops);
-  if ($err !== null) {
-      return $err;
+  if ($err != null) {
+      return 500;
   } else {
-      return  "PersistentFop Id: ".$id;
+      return 200;
   }
 }
+static function deleteall($limit){
+
+   $accessKey = 'RUTxOoX5K9jJiQtef7kk4w5_uRHBFKeCw6IfETaZ';
+   $secretKey = '7z_zrCHM2dOlJ7W1upnUem6NjYrbQvhJcNmE0PJN';
+   $auth = new Auth($accessKey, $secretKey);
+   $bucket = 'bbtrainchapter';
+  //初始化BucketManager
+  $bucketMgr = new BucketManager($auth);
+  //你要测试的空间， 并且这个key在你空间中存在
+    $prefix = $limit;
+
+    list($iterms, $marker, $err) = $bucketMgr->listFiles($bucket, $prefix);
+   //  var_dump($iterms[0]['key']);
+   if ($err == null) {
+    foreach ($iterms as $key) {
+      $err = $bucketMgr->delete($bucket, $key['key']);
+      if ($err != null) {
+          return 500;
+      } else {
+          return 200;
+      }
+    }
+  }
+    else {
+       return 500;
+   }
+}
+static function deleteone($key){
+
+   $accessKey = 'RUTxOoX5K9jJiQtef7kk4w5_uRHBFKeCw6IfETaZ';
+   $secretKey = '7z_zrCHM2dOlJ7W1upnUem6NjYrbQvhJcNmE0PJN';
+   $auth = new Auth($accessKey, $secretKey);
+   $bucket = 'bbtrainchapter';
+
+  //初始化BucketManager
+    $bucketMgr = new BucketManager($auth);
+    $err = $bucketMgr->delete($bucket, $key);
+    if ($err != null) {
+        return 500;
+    } else {
+        return 200;
+    }
+  }
 }
