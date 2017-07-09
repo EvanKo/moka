@@ -12,6 +12,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Order;
+use App\Chatrecord;
 use JWTAuth;
 use DB;
 use File;
@@ -25,17 +26,20 @@ class ChatController extends BaseController
         parent::__construct();
 	}
 	//检查是否有未收到消息
-	public function checkMessage(Requests $request)
+	public function checkMessage(Request $request)
 	{
 		$token = JWTAuth::getToken();
 		$user_message = JWTAuth::toUser($token);
 		$moka_id = $user_message['moka'];
 
-		$records = DB::table('ChatRecords')->where('to','=',$moka_id)->get();//unreadMsg:$moka_id 未读消息集合
+		$records = DB::table('ChatRecords')->where('to','=',$moka_id)
+			->select(['id','from','fromName','fromHead','to','toName','content','time'])
+			->get();//unreadMsg:$moka_id 未读消息集合
 		if($records->count()){
-			$data = $records;
-			$records->delete();
-			return $this->returnMsg('200','ok',['MsgNum'=>$records->count(),'records'=>$data]);
+			DB::beginTransaction();
+			DB::table('ChatRecords')->where('to','=',$moka_id)->delete();
+			DB::commit();
+			return $this->returnMsg('200','ok',['MsgNum'=>$records->count(),'records'=>$records]);
 		}
 		else{
 			return $this->returnMsg('404','Unread message not found');

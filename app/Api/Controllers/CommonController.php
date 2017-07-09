@@ -220,7 +220,8 @@ class CommonController extends BaseController
         $page = $request->input('page',1);
         $area = $request->input('area',$area);
         $record = DB::table('Records')
-          ->where('area',$area)
+          // ->where('area',$area)
+          ->whereRaw('area = '.$area.' and ( target = 1 or target = 3)')
           ->orderBy('id','desc')
           ->skip(($page-1)*10)
           ->limit(10)
@@ -244,9 +245,23 @@ class CommonController extends BaseController
       $moka = DB::table('Friends')
         ->where('frienda',$role['moka'])
         ->pluck('friendb');
-      $record = DB::table('Records')
-        ->where('moka',$role['moka'])
-        ->orwhere('moka',$moka)
+      $num = 0;
+        foreach ($moka as $key) {
+          $num = 1;
+          $query = " or moka = ".$key;
+        }
+      $record = DB::table('Records');
+      if ($num = 0 ) {
+          $record = $record
+          ->whereRaw( '( moka = '.$role['moka'].$query.')and ( target = 1 or target = 3)');
+      }
+      else {
+        $record = $record
+        ->whereRaw( '( moka = '.$role['moka'].')and ( target = 1 or target = 3)');
+      }
+      $record = $record
+        // ->where('moka',$role['moka'])
+        // ->orwhere('moka',$moka)
         ->orderBy('id','desc')
         ->skip(($page-1)*10)
         ->limit(10)
@@ -268,6 +283,7 @@ class CommonController extends BaseController
       $role = JWTAuth::toUser();
       $page = $request->input('page',1);
       $record = DB::table('Records')
+      ->whereRaw( 'target = 1 or target = 3')
         ->orderBy('view','desc')
         ->orderBy('created_at','desc')
         ->skip(($page-1)*10)

@@ -154,6 +154,7 @@ class MainpageController extends BaseController
       ]);
       $choose = $request->input('choose');
       $page = $request->input('page',1);
+
       $moka = $request->input('moka',$role['moka']);
       $result = DB::table('Status')
         ->leftjoin('Orders','Orders.id','=','Status.target_id')
@@ -163,6 +164,7 @@ class MainpageController extends BaseController
       if ($choose == 1) {
         $result = $result->where('Status.boss',$moka);
         $result = $result
+        ->orderBy('id','desc')
         ->select('Status.id','Status.reserved','Status.customer','Status.boss','Status.target_id','Orders.price','Status.status')
         ->skip(($page-1)*9)
         ->limit(9)
@@ -176,6 +178,7 @@ class MainpageController extends BaseController
             ->where('moka',$output[$number]['customer'])
             ->select('id','name','head')
             ->first();
+            $output[$number]['boss'] = array();
             $output[$number]['boss']['id'] = $role['id'];
             $output[$number]['boss']['head'] = $role['head'];
           $output[$number++]['boss']['name'] = $role['name'];
@@ -184,6 +187,7 @@ class MainpageController extends BaseController
       else {
         $result = $result->where('Status.customer',$moka);
         $result = $result
+        ->orderBy('id','desc')
         ->select('Status.id','Status.reserved','Status.customer','Status.boss','Status.target_id','Orders.price','Status.status')
         ->skip(($page-1)*9)
         ->limit(9)
@@ -209,16 +213,100 @@ class MainpageController extends BaseController
     }
     public function order(Request $request){
       $role = JWTAuth::toUser();
+      $this->validate($request,[
+        'choose'=>'required|Numeric'
+      ]);
+      $choose = $request->input('choose');
       $page = $request->input('page',1);
+
       $moka = $request->input('moka',$role['moka']);
-      $target = $request->input('target');
       $result = DB::table('Status')
-        ->where('target',$target)
-        ->where('boss',$moka)
+        ->leftjoin('Orders','Orders.id','=','Status.target_id')
+        ->where('Status.target',2)
+        ->where('Status.yue','!=',1);
+      $output = array();
+      if ($choose == 1) {
+        $result = $result->where('Status.boss',$moka);
+        $result = $result
+        ->orderBy('id','desc')
+        ->select('Status.id','Status.reserved','Status.customer','Status.boss','Status.target_id','Orders.price','Status.status','Status.name','Status.ps')
         ->skip(($page-1)*9)
         ->limit(9)
         ->get();
-        $result = $this->returnMsg('200','ok',$result);
+        $number = 0;
+        $result = json_decode($result,true);
+
+        foreach ($result as $key) {
+          $output[$number]=$key;
+          $output[$number]['customer'] = DB::table('Roles')
+            ->where('moka',$output[$number]['customer'])
+            ->select('id','name','head')
+            ->first();
+            $output[$number]['boss'] = array();
+            $output[$number]['boss']['id'] = $role['id'];
+            $output[$number]['boss']['head'] = $role['head'];
+          $output[$number++]['boss']['name'] = $role['name'];
+        }
+      }
+      else {
+        $result = $result->where('Status.customer',$moka);
+        $result = $result
+        ->orderBy('id','desc')
+        ->select('Status.id','Status.reserved','Status.customer','Status.boss','Status.target_id','Orders.price','Status.status','Status.name','Status.ps')
+        ->skip(($page-1)*9)
+        ->limit(9)
+        ->get();
+        $number = 0;
+        $result = json_decode($result,true);
+
+        foreach ($result as $key) {
+          $output[$number]=$key;
+          $output[$number]['boss'] = DB::table('Roles')
+            ->where('moka',$output[$number]['boss'])
+            ->select('id','name','head')
+            ->first();
+            $output[$number]['customer'] = array();
+            $output[$number]['customer']['id'] = $role['id'];
+            $output[$number]['customer']['head'] = $role['head'];
+          $output[$number++]['customer']['name'] = $role['name'];
+        }
+      }
+
+        $result = $this->returnMsg('200','ok',$output);
         return response()->json($result);
+    }
+    public function officelist(Request $request){
+      $role = JWTAuth::toUser();
+      $moka = $request->input('moka',$role['moka']);
+      $page = $request->input('page',1);
+      $result = DB::table('Orders')
+      ->where('type',2)
+      ->where('finish',1)
+        ->where('moka',$moka)
+        ->orderBy('id','desc')
+        ->skip(($page-1)*4)
+        ->limit(4)
+        ->select('id','title','content','place','photonum','focusphoto','moka'
+        ,'price'
+        ,'img'
+        ,'label')
+        ->get();
+        $num = 0;
+        $output = array( );
+      if ($result->count() == 0) {
+        $result = $this->returnMsg('200','ok',$output);
+        return response()->json($result);
+      }
+
+      $result = json_decode($result,true);
+        foreach ($result as $key) {
+          $output[$num]['data'] = $key;
+          $output[$num++]['photo'] = DB::table('Photos')
+            ->where('mokaid',$key['id'])
+            ->select('id','img_s','ps','imgnum')
+            ->get();
+        }
+      $result = $this->returnMsg('200','ok',$output);
+      return response()->json($result);
     }
 }

@@ -216,18 +216,28 @@ class PhotoController extends BaseController
       $role = JWTAuth::toUser();
       $this->validate($request,[
         'id'=>'required',
-        'img'=>'required|Image',
+        // 'img'=>'required|Image',
         'num'=>'required|Numeric',
       ]);
       $id = $request->input('id');
-      $img = $request->file('img');
+      $img = $request->file('img',null);
       $num = $request->input('num');
+      if ($img == null) {
+          $sending = QiniuController::deleteall('office'.$role['moka'].''.$id.''.$num);
+          if ($sending == 500) {
+            $result = $this->returnMsg('500',"deleted failed");
+            return response()->json($result);
+          }
+          $result = $this->returnMsg('200',"deleted");
+          return response()->json($result);
+        }
       $imgroot = 'office'.$role['moka'].''.$id.$num.md5(time()).".".$img->getClientOriginalExtension();
       $imgroot2 = 'office'.$role['moka'].''.$id.$num.md5(time())."s.".$img->getClientOriginalExtension();
       $new = public_path().'/'.$imgroot2;
       PhotoController::small($img,200,200,$new,$img->getClientOriginalExtension());
       // return $new;
       QiniuController::deleteall('office'.$role['moka'].''.$id.''.$num);
+
       $sending = QiniuController::update($img,$imgroot);
       if ($sending == 500) {
         $result = $this->returnMsg('500',"upload failed");
@@ -245,12 +255,9 @@ class PhotoController extends BaseController
       $input['img_lnum'] = $imgroot;
       $input['mokaid'] = $id;
       $input['imgnum'] = $num;
+      $input['ps'] = $request->input('ps','');
       $input['act'] = 3;
       $input['moka']=$role['moka'];
-      if ($num == 1) {
-        DB::table('Orders')->where('id',$id)
-          ->update(['img'=>$input['img_s']]);
-      }
       $last = Photo::whereRaw('mokaid = \''.$id.'\' and imgnum = '.$num);
       if (!$last->get()->isempty()) {
         $result = $last->update($input);
@@ -263,7 +270,7 @@ class PhotoController extends BaseController
       return response()->json($result);
     }
 
-    protected static function small($background, $width, $height,$newfile,$type) {
+    public static function small($background, $width, $height,$newfile,$type) {
      list($s_w, $s_h)=\getimagesize($background);//获取原图片高度、宽度
      if ($width && ($s_w < $s_h)) {
      $width = ($height / $s_h) * $s_w;

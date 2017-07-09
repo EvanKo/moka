@@ -135,9 +135,16 @@ class WechatPayController extends BaseController
 	}
 	
     public function unifiedOrder(Request $request)
-	{
+	{	//从token获取用户信息
+		$token = JWTAuth::getToken();
+        $user_json = JWTAuth::toUser($token);
+		$user = json_decode($user_json, true);
+		$check_bind = $this->checkBindWechat($user['moka']);
+		if(!$check_bind){
+			return $this->returnMsg('500','Not bind the wechat account');
+		}		
 		$type = $request->input('type');
-		$orderNum = $request->input('orderID');
+		$orderNum = $request->input('orderNum');
 
         $url = "https://api.mch.weixin.qq.com/pay/unifiedorder";
         $server_url = "121.40.220.52";    
@@ -150,11 +157,7 @@ class WechatPayController extends BaseController
         $inputObj['out_trade_no'] = "1462118902".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
         $inputObj['spbill_create_ip'] = $_SERVER['REMOTE_ADDR'];//APP和网页支付提交用户端ip
 
-		//从token获取用户信息
-		$token = JWTAuth::getToken();
-        $user_json = JWTAuth::toUser($token);
-		$user = json_decode($user_json, true);
-		//约定1为购买普通会员，2为高级会员,3为至尊会员,4为支付订单
+			//约定1为购买普通会员，2为高级会员,3为至尊会员,4为支付订单
 		switch($type){
 			case 1:
 				$inputObj['notify_url']=$server_url."/api/nomalMemberNotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
@@ -175,6 +178,9 @@ class WechatPayController extends BaseController
 			case 5:
 				$inputObj['notify_url']=$server_url."/api/dateordernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
 				$orderInfo = DB::table('Orders')->where('id','=',$orderNum)->first();
+				if(!$orderInfo){
+					return $this->returnMsg('404','Not find the order');
+				}
 				$userInfo = DB::table('wechats')->where('mokaid','=',$user['moka'])->first();
 				break;
 
@@ -328,4 +334,17 @@ class WechatPayController extends BaseController
         $result['data']= $data;
         return $result;
     }
+
+	//检查用户是否绑定微信
+	public function checkBindWechat($mokaid)
+	{
+		$check = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
+		if($check){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
 }

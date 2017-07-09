@@ -2,6 +2,8 @@
 
 namespace App\Api\Controllers;
 
+use App\Api\Controllers\PhotoController;
+use App\Api\Controllers\QiniuController;
 use App\Api\Controllers\BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,12 +26,13 @@ class OfficeController extends BaseController
       $role = JWTAuth::toUser();
       $object = DB::table('Orders')
         ->where('moka',$role['moka'])
-        ->where('finish','0')
+        ->where('type',2)
+        ->where('finish',0)
         ->get();
       if ($object->count() != 0) {
           $photo  = DB::table('Orders')
             ->where('moka',$role['moka'])
-            ->where('finish','0')
+            ->where('finish',0)
             ->orderBy('id','desc')
             ->limit(1)
             ->pluck('id');
@@ -37,11 +40,12 @@ class OfficeController extends BaseController
             ->where('mokaid',$photo)
             ->where('act',3)
             ->orderBy('imgnum')
-            ->select('id','Photos.imgnum','Photos.img_s')
+            ->select('id','Photos.imgnum','Photos.img_s','ps')
             ->get();
           $office = DB::table('Orders')
             ->where('moka',$role['moka'])
-            ->where('finish','0')
+            ->where('finish',0)
+            ->where('type',2)
             ->orderBy('id','desc')
             ->limit(1)
             ->get();
@@ -52,6 +56,7 @@ class OfficeController extends BaseController
         }
       $input['area'] = $role['area'];
       $input['moka'] = $role['moka'];
+      $input['type'] = 2;
       // $input['local']=$role['province'].$role['city'];
       $input['img'] = 'head/timg.jpeg';
       $result = Order::create($input);
@@ -89,7 +94,7 @@ class OfficeController extends BaseController
       //   ActivityController::deldir($root);
       // }
       DB::table('Orders')
-        ->where('id',$mokaid)
+        ->where('id',$id)
         ->delete();
       $result = $this->returnMsg('200',"deleted");
       return response()->json($result);
@@ -101,10 +106,13 @@ class OfficeController extends BaseController
       $this->validate($request,[
         'id'=>'required',
         'title'=>'required',
-        'type'=>'required',
+        // 'type'=>'required',
         'content'=>'required',
-        // 'start'=>'required|date',
-        // 'end'=>'required|date',
+        'lasting'=>'required|Numeric',
+        // 'reserved'=>'required|Date',
+        'place'=>'required',
+        'photonum'=>'required|Numeric',
+        'focusphoto'=>'required|Numeric',
         'price'=>'required|Numeric',
       ]);
       $id = $request->input('id',null);
@@ -131,7 +139,7 @@ class OfficeController extends BaseController
 
     }
 
-    //保存
+    //详情
     public function office(Request $request){
       $role = JWTAuth::toUser();
       $this->validate($request,[
@@ -142,7 +150,7 @@ class OfficeController extends BaseController
       ->where('mokaid',$id)
       ->where('act',3)
       ->orderBy('imgnum')
-      ->select('id','Photos.imgnum','Photos.img_s')
+      ->select('id','Photos.imgnum','Photos.img_l','ps')
       ->get();
     $office = DB::table('Orders')
       ->where('id',$id)
@@ -152,6 +160,60 @@ class OfficeController extends BaseController
     $result = $this->returnMsg('200',"ok",$result);
     return response()->json($result);
   }
+  //详情
+  public function cover(Request $request){
+    $role = JWTAuth::toUser();
+    $this->validate($request,[
+      'id'=>'required',
+      'img'=>'required|Image',
+    ]);
+    $id = $request->input('id');
+    $img = $request->file('img');
+    $office = DB::table('Orders')->where('id',$id);
+    $moka = $office->pluck('moka');
+    if ($moka[0] != $role['moka']) {
+      $result = $this->returnMsg('500','error request');
+      return response()->json($result);
+    }
+    $imgroot2 = 'officehead'.$role['moka'].''.$id.md5(time())."s.".$img->getClientOriginalExtension();
+    $new = public_path().'/'.$imgroot2;
+    PhotoController::small($img,200,200,$new,$img->getClientOriginalExtension());
+    // return $new;
+    QiniuController::deleteall('officeofficehead'.$role['moka'].''.$id.'');
+
+    $sending = QiniuController::update($img,$imgroot2);
+    if ($sending == 500) {
+      $result = $this->returnMsg('500',"upload failed");
+      return response()->json($result);
+    }
+    unlink($new);
+
+    $office->update(['img'=>$imgroot2]);
+    $result = $this->returnMsg('200',"ok",$imgroot2);
+    return response()->json($result);
+
+  }
+//   //列表
+//   public function officelist(Request $request){
+//     $role = JWTAuth::toUser();
+//     $this->validate($request,[
+//       'id'=>'required',
+//     ]);
+//     $id = $request->input('id');
+//   $photos = DB::table('Photos')
+//     ->where('mokaid',$id)
+//     ->where('act',3)
+//     ->orderBy('imgnum')
+//     ->select('id','Photos.imgnum','Photos.img_s')
+//     ->get();
+//   $office = DB::table('Orders')
+//     ->where('id',$id)
+//     ->get();
+//   $result['photos'] = $photos;
+//   $result['office'] = $office;
+//   $result = $this->returnMsg('200',"ok",$result);
+//   return response()->json($result);
+// }
     //
     // protected static function deldir($dir) {
     //   //先删除目录下的文件：

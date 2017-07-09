@@ -68,19 +68,20 @@ class AlbumController extends BaseController
       $result = DB::table('Photos')
         ->where('id',$id)
         ->where('act',2);
-      $data = json_decode($result->get(),true);
+        if ($result->get()->count() == 0) {
+          $result = $this->returnMsg('500',"id error");
+          return response()->json($result);
+        }
+        $data = json_decode($result->get(),true);
       $data = $data[0];
         $album = DB::table('Album')
-          ->where('id',$data['id']);
+          ->where('id',$data['mokaid']);
         $albummoka =$album->pluck('moka');
       if ($albummoka[0]!=$role['moka']) {
         $result = $this->returnMsg('500',"not yours");
         return response()->json($result);
       }
-      if ($result->get()->count() == 0) {
-        $result = $this->returnMsg('500',"id error");
-        return response()->json($result);
-      }
+
       $img_snum = $result->pluck('img_snum');
       $img_lnum = $result->pluck('img_lnum');
       QiniuController::deleteone($img_snum);

@@ -17,6 +17,12 @@ class Order extends Model
   ,'lasting'
   ,'reserved'
 	,'finish'
-  ,'area'
+	,'area'
+	,'local'
+	  ,'photonum'
+	    ,'focusphoto'
+	,'place'
+  ,'label'
+
 );
 }

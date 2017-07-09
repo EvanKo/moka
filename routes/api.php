@@ -1,4 +1,4 @@
-  <?php
+<?php
 use Illuminate\Http\Request;
 
 /*
@@ -38,6 +38,8 @@ $api->version('v1', function ($api) {
 		$api->post('recharge','PayModule\PayController@recharge');
 		//打赏目标
 		$api->post('paytomoka','PayModule\PhotoController@pay');
+		//设置打赏额度
+	    $api->post('setfee','PayModule\PayController@setFee');
 		//购买会员
 		$api->post('buymember', 'PayModule\PayController@member');
       $api->post('update', 'LoginController@update'); //name province city office area intro workexp
@@ -57,8 +59,10 @@ $api->version('v1', function ($api) {
 	  		$api->post('checkUserLogin', 'ChatModule\ChatController@checkUserLogin');
 	    $api->post('newGroupChat', 'ChatController@newGroupChat');
 	    $api->post('joinGroup', 'ChatController@joinGroup');
-		//发起约拍
+		//摄影师发起约拍订单
 		$api->post('newDatePhoto','PayModule\DatePhotoController@newDatePhoto');
+		//摄影师发起工作室订单
+		$api->post('newStudioOrder','PayModule\DatePhotoController@newStudioOrder');
 		//支付约拍
 		//$api->post('payDataPhoto','PayModule\PayController@payDataPhoto');
 		    //动态
@@ -81,6 +85,7 @@ $api->version('v1', function ($api) {
         $api->post('person', 'MainpageController@main');//finish
            $api->post('myactivity', 'MainpageController@activity');//finish
 		        $api->post('myyue', 'MainpageController@yue');//finish
+		$api->post('myorder', 'MainpageController@order');//finish
 		$api->post('selfrecord', 'CommonController@selfrecord');//finish page
         //订单
         $api->post('makeorder', 'OrderController@make');//finish price,type,img,content
@@ -135,6 +140,8 @@ $api->version('v1', function ($api) {
 				        $api->post('deleoffice', 'OfficeController@delete');//finish key,page
 				        $api->post('saveoffice', 'OfficeController@save');//finish key,page
         $api->post('office', 'OfficeController@office');//finish key,page
+        $api->post('officelist', 'MainpageController@officelist');//finish id,img1
+		$api->post('officecover', 'OfficeController@cover');//finish id,img
 	  });
     });
 });

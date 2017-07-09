@@ -15,8 +15,6 @@ use App\Http\Requests;
 use App\Order;
 use JWTAuth;
 use DB;
-use File;
-use App
 
 class PayController extends BaseController
 {
@@ -49,6 +47,26 @@ class PayController extends BaseController
 			return $this->returnMsg('500','wechat not bind');
 		}
     }
+	//设置打赏额度
+	public function setFee (Request $request)
+	{
+		$fee = $request->input("fee");
+		if(!$fee){
+			return $this->returnMsg('504','请输入正确的参数');
+		}
+
+		$user_data = JWTAuth::toUser();
+		$user_data = json_decode($user_data,true);
+
+		$result = DB::table('Roles')->where('moka','=',$user_data['moka'])
+			->update(['fee'=>$fee]);
+		if($result){
+			return $this->returnMsg('200','ok');
+		}else {
+			return $this->returnMsg('500','fail');
+		}
+	}
+		
     //打赏一个目标，支付一份订单
 	public function pay(Request $request){
 		$user_data = JWTAuth::toUser();
@@ -57,7 +75,7 @@ class PayController extends BaseController
 			$input['amount'] = $request->input('amount');
 			$input['tomoka'] = $request->input('tomoka');
 
-			$input['moka'] = $user_data('moka');
+			$input['moka'] = $user_datar['moka'];
 			$input['tel'] = $user_data['tel'];
 			$input['name'] = $user_data['name'];
 			$input['status'] = 0;
@@ -130,7 +148,7 @@ class PayController extends BaseController
 	}
 
 	
-	//检查用户余额是否够
+	//检查用户余额是否足够
 	public function checkMoney($mokaid,$money)
 	{
 		$data = DB::table('Roles')->where('moka','=',$mokaid)->first();
@@ -157,7 +175,7 @@ class PayController extends BaseController
 	public function checkBindWechat($mokaid)
 	{
 		$check = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
-		if($check->count()){
+		if($check){
 			return true;
 		}
 		else{

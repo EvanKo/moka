@@ -157,10 +157,13 @@ class ActivityController extends BaseController
         $role = JWTAuth::toUser();
         $area = $role['area'] == null ? 7:$role['area'];
         $page = $request->input('page',1);
-        $area = $request->input('area',$area);
+        // $area = $request->input('area',$area);
         $type = $request->input('type',null);
+        $local = $request->input('local','');
+        // $local = ($local);
         $record = DB::table('Activities')
-          ->where('area',$area)
+          // ->whereRaw('local like %'.$local.'% and finish = 1');
+          ->where('local','like',"%".$local."%")
           ->where('finish',1);
         if ($type != null) {
           $record = $record->where('type',$type);
@@ -169,7 +172,7 @@ class ActivityController extends BaseController
           // ->where('pass','1')
           ->skip(($page-1)*10)
           ->limit(10)
-          ->select('img','area','type','view','id','title','price')
+          ->select('img','area','type','view','id','title','price','local')
           ->get();
         if ($record->count() == 0) {
           $result = $this->returnMsg('200','bottum');
@@ -192,7 +195,8 @@ class ActivityController extends BaseController
           ->where('target',4)
           ->where('target_id',$id);
           if ($check->get()->count() == 0) {
-            $result = $this->returnMsg('200','ok');
+            $result = $this->returnMsg('200','ok
+            ');
             return response()->json($result);
           }
         $own = $check->pluck('boss');

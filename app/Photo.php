@@ -18,5 +18,6 @@ class Photo extends Model
       ,'view'
 	  ,'act'
 	  ,'moka'
-      );
+	,'ps'	
+  );
 }
