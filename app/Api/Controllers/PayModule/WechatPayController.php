@@ -139,10 +139,15 @@ class WechatPayController extends BaseController
 		$token = JWTAuth::getToken();
         $user_json = JWTAuth::toUser($token);
 		$user = json_decode($user_json, true);
+		//检查绑定微信
 		$check_bind = $this->checkBindWechat($user['moka']);
 		if(!$check_bind){
 			return $this->returnMsg('500','Not bind the wechat account');
-		}		
+		}else{
+			//如果绑定成功则返回的是用户openid
+			$openid = $check_bind;
+		}
+					
 		$type = $request->input('type');
 		$orderNum = $request->input('orderNum');
 
@@ -181,7 +186,7 @@ class WechatPayController extends BaseController
 				if(!$orderInfo){
 					return $this->returnMsg('404','Not find the order');
 				}
-				$userInfo = DB::table('wechats')->where('mokaid','=',$user['moka'])->first();
+				//$userInfo = DB::table('wechats')->where('mokaid','=',$user['moka'])->first();
 				break;
 
 		}
@@ -189,7 +194,7 @@ class WechatPayController extends BaseController
         $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
         
 
-        $inputObj['openid'] = $userInfo->openid;//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
+        $inputObj['openid'] = $openid;//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
 		$amount = 100*$orderInfo->amount;
 	//$amount=100; //付款多少( /分）
 		$inputObj['total_fee']=$amount;//订单总金额，单位为分
@@ -234,7 +239,7 @@ class WechatPayController extends BaseController
         $data=$this->postXmlCurl($xml,$url);
         if($data){  
             $rsxml = simplexml_load_string($data);
-            if($rsxml->return_code == 'SUCCESS' and ((string)$rsxml->result_code)=='SUCCESS'){
+            //if($rsxml->return_code == 'SUCCESS' and ((string)$rsxml->result_code)=='SUCCESS'){
                 //支付签名
                 //签名步骤一：按字典序排序参数
  		log::info($data);
@@ -243,7 +248,7 @@ class WechatPayController extends BaseController
                 $payObj['appId']=$inputObj['appid'];
                 $payObj['timeStamp']='"'.$time.'"';
                 $payObj['nonceStr']=$this->getNonceStr();
-                $payObj['package']="prepay_id=".$rsxml->prepay_id;
+                $payObj['package']="prepay_id=test";//.$rsxml->prepay_id;
                 $payObj['signType']="MD5";
 
                 ksort($payObj);
@@ -271,11 +276,20 @@ class WechatPayController extends BaseController
                 );
                 $result = $this->result('200', 'OK');
                 $result['data']=$data;
+				/**测试**/
+				DB::beginTransaction();
+				$userInfo = DB::table('wechats')->where('openid','=',$openid)->first();
+				$mokaid = $userInfo->mokaid;
+				$orderInfo = DB::table('Status')->where(['customer'=>$mokaid,'target_id'=>$orderNum,'status'=>1])->first();
+				$orderInfo->update(['status'=>2]);	
+				DB::commit();
+				Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+				/****/
                 return response()->json($result);
-            }else{
-                $result = $this->result('204', $rsxml->return_msg);
-                return response()->json($result); 
-            }
+            //}else{
+            //    $result = $this->result('204', $rsxml->return_msg);
+            //    return response()->json($result); 
+           // }
             
         }else{ 
             $result = $this->result('204','ERROR');
@@ -340,7 +354,7 @@ class WechatPayController extends BaseController
 	{
 		$check = DB::table('wechats')->where('mokaid','=',$mokaid)->first();
 		if($check){
-			return true;
+			return $check->openid;
 		}
 		else{
 			return false;
