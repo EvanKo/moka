@@ -117,13 +117,28 @@ class PayController extends BaseController
 			return $this->returnMsg('500','wechat not bind');
 		}
 	}
-	//摄影师支付约拍
-	public function payDatePhoto(Request $request)
+
+	//订单完成，增加boss的余额
+	public function dealDone(Request $request)
 	{
-		$user_data = JWTAuth::toUser();
-		$mokaid = $user_data['moka'];
-		$check = $this->checkBindWechat($mokaid);
-		if($check){
+		$to_mokaid = $request->input('boss');
+		$id = $request->input('id');
+		if(!$id || !$to_mokaid){
+			return $this->returnMsg('500','id,boss is required');
+		}
+		$check1 = DB::table('Status')->where('id','=',$id)->first();
+		$check2  = DB::table('Orders')->where('id', '=', $check1->target_id)->first();
+		if(!$check1 || !$check2){
+			return $this->returnMsg('404', 'can not find the order');
+		}
+		$price = $check2->price;
+		DB::table('Status')->where('id','=',$id)->update(['status'=>5]);
+		$amount = DB::table('Roles')->where('moka', '=', $to_mokaid)->select('money')->first();	
+		$result = DB::table('Roles')->where('moka', '=', $to_mokaid)->update(['money'=>$price+$amount->money]);
+		if($result){
+			return $this->returnMsg('200','ok, finishd the order');
+		}else{
+			return $this->returnMsg('500','fail');
 		}
 	}
 	//提现
