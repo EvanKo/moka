@@ -67,8 +67,8 @@ class MomentController extends BaseController
         return response()->json($result);
       }
       $first = DB::table('Moments')
-        ->where('id',$id)
-        ->where('moka',$role['moka']);
+        ->where('id',$id);
+        // ->where('moka',$role['moka']);
       $object = $first->get();
       if ($object->count() == 0) {
         $result = $this->returnMsg('500',"momentid error");

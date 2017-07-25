@@ -43,7 +43,7 @@ class MainpageController extends BaseController
       $area = $request->input('area','null');
       if ($area == 'null') {
         $record = DB::table('Roles')
-          ->where('role',0)
+          ->where('role',1)
           ->orderBy('fans','desc')
           ->skip(($page-1)*15)
           ->limit(15)
@@ -51,7 +51,7 @@ class MainpageController extends BaseController
           ->get();
       }
       else {$record = DB::table('Roles')
-        ->where('role',0)
+        ->where('role',1)
         ->where('area',$area)
         ->orderBy('fans','desc')
         ->skip(($page-1)*15)
@@ -126,14 +126,17 @@ class MainpageController extends BaseController
         $result = $result
         ->pluck('target_id');
       $result = DB::table('Activities')
-        ->where('id',$result)
+        // ->whereRaw('id = '.$result.' or moka = '.$moka)
+        ->whereIn('id',$result)
         ->orwhere('moka',$role['moka'])
         ->orderBy('id','desc')
         ->skip(($page-1)*6)
         ->select('id','moka','img','type','view','title','price')
         ->limit(6)
         ->get();
+        // return $result;
         $number = 0;
+        $output = array();
         $result = json_decode($result,true);
         foreach ($result as $key) {
           $output[$number]=$key;

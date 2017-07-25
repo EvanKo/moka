@@ -52,6 +52,7 @@ class DatePhotoController extends BaseController
 			$input['type'] = 1;//约定约拍订单类型为1
 			$input['area'] = $user_data['area'];//地区
 			$input['boss'] = $request->input('boss');//被约拍的人id
+			$input['reserved'] = $request->input('reserved');		
 			//$input['finish'] = 3;//默认为3
 
 			//$input['lasting'] = '';
@@ -64,7 +65,7 @@ class DatePhotoController extends BaseController
 			$result1 = $this->addStatus($response['id'],$input);
 			$result2 = $this->addRecord($response['id'],$input);
 			if($result1 && $result2){
-				return $this->returnMsg('200','ok',$response['id']);
+				return $this->returnMsg('200','ok',$result1['id']);
 			}else{
 				return $this->returnMsg('505','create fail');
 			}
@@ -87,7 +88,7 @@ class DatePhotoController extends BaseController
 		}			
 		$order = DB::table('Orders')
 			->where('id',$input['target_id'])
-			->where('type',2);
+			->where('type',2)->get();
 		if($order->get()->count()==0){
 			$result = $this->returnMsg('500',"office not existed");
 			          return response()->json($result);
@@ -123,7 +124,7 @@ class DatePhotoController extends BaseController
 		$insert_data['boss'] = $data['boss'];
 		$result = Status::create($insert_data);
 		if ($result)
-			return TRUE;
+			return json_decode($result,true);
 		else return FALSE;
 	}	
 	//表Records添加记录，被约拍者

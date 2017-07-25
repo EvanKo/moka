@@ -60,14 +60,14 @@ class MokaController extends BaseController
         return $this->returnReq($imgnum,'imgnum');
       }
       $num = md5(time()).rand(1,9);
-      
+
       $input['moka'] = $role['moka'];
       $input['size'] = $size;
       $input['imgnum'] = $imgnum;
       $input['area'] = $role['area'];
       $input['mokaid'] = $num;
       $result = Moka::create($input);
-      $result = $this->returnMsg('200',"ok",$num);
+      $result = $this->returnMsg('200',"ok",$result);
       return response()->json($result);
     }
 

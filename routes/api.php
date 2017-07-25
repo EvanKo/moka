@@ -63,6 +63,7 @@ $api->version('v1', function ($api) {
 		$api->post('newDatePhoto','PayModule\DatePhotoController@newDatePhoto');
 		//摄影师发起工作室订单
 		$api->post('newStudioOrder','PayModule\DatePhotoController@newStudioOrder');
+		$api->post('dealDone', 'PayModule\PayController@dealDone');
 		//支付约拍
 		//$api->post('payDataPhoto','PayModule\PayController@payDataPhoto');
 		    //动态

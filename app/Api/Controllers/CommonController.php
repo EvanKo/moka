@@ -289,6 +289,7 @@ class CommonController extends BaseController
         ->skip(($page-1)*10)
         ->limit(10)
         ->get();
+      // return $record;
       $flows = json_decode($record,true);
       $num = 0;
       if ($record->count() == 0) {
@@ -308,6 +309,7 @@ class CommonController extends BaseController
           $moment = DB::table('Moments')
             ->where('id',$target_id);
           $view = json_decode($moment->get(),true);
+          // dd($view);
           $moka = $view[0]['moka'];
           $view = $view[0]['view']+1;
           $moment->update(['view'=>$view]);

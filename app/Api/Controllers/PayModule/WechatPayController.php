@@ -11,6 +11,7 @@ use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
+use App\Status;
 
 
 class WechatPayController extends BaseController
@@ -123,7 +124,7 @@ class WechatPayController extends BaseController
 			DB::beginTransaction();
 			$userInfo = DB::table('wechats')->where('openid','=',$openid)->first();
 			$mokaid = $userInfo->mokaid;
-			$orderInfo = DB::table('Status')->where(['customer'=>$mokaid,'target_id'=>$orderNum,'status'=>1])->first();
+			$orderInfo = DB::table('Status')->where(['customer'=>$mokaid,'target'=>'2','id'=>$orderNum,'status'=>1])->first();
 			$orderInfo->update(['status'=>2]);	
 			DB::commit();
 			Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
@@ -140,13 +141,13 @@ class WechatPayController extends BaseController
         $user_json = JWTAuth::toUser($token);
 		$user = json_decode($user_json, true);
 		//检查绑定微信
-		$check_bind = $this->checkBindWechat($user['moka']);
-		if(!$check_bind){
-			return $this->returnMsg('500','Not bind the wechat account');
-		}else{
+		//$check_bind = $this->checkBindWechat($user['moka']);
+		//if(!$check_bind){
+		//	return $this->returnMsg('500','Not bind the wechat account');
+		//}else{
 			//如果绑定成功则返回的是用户openid
-			$openid = $check_bind;
-		}
+		//	$openid = $check_bind;
+		//}
 					
 		$type = $request->input('type');
 		$orderNum = $request->input('orderNum');
@@ -162,7 +163,7 @@ class WechatPayController extends BaseController
         $inputObj['out_trade_no'] = "1462118902".date("YmdHis").rand(111,999);//商户系统内部订单号，要求32个字符内、且在同一个商户号下唯一
         $inputObj['spbill_create_ip'] = $_SERVER['REMOTE_ADDR'];//APP和网页支付提交用户端ip
 
-			//约定1为购买普通会员，2为高级会员,3为至尊会员,4为支付订单
+			//约定1为购买普通会员，2为高级会员,3为至尊会员,4为支付订单,5约拍订单
 		switch($type){
 			case 1:
 				$inputObj['notify_url']=$server_url."/api/nomalMemberNotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
@@ -182,7 +183,7 @@ class WechatPayController extends BaseController
 				break;
 			case 5:
 				$inputObj['notify_url']=$server_url."/api/dateordernotify";//异步接收微信支付结果通知的回调地址，通知url必须为外网可访问的url，不能携带参数
-				$orderInfo = DB::table('Orders')->where('id','=',$orderNum)->first();
+				$orderInfo = DB::table('Status')->where('id','=',$orderNum)->first();
 				if(!$orderInfo){
 					return $this->returnMsg('404','Not find the order');
 				}
@@ -194,8 +195,8 @@ class WechatPayController extends BaseController
         $inputObj['trade_type']="JSAPI";//取值如下：JSAPI，NATIVE，APP等。公众号支付未JSAPI
         
 
-        $inputObj['openid'] = $openid;//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
-		$amount = 100*$orderInfo->amount;
+        $inputObj['openid'] = $testopenid;//$user['openid'];//公众号支付，此参数必传，此参数为微信用户在商户对应appid下的唯一标识
+		$amount = 1;//100*$orderInfo->amount;
 	//$amount=100; //付款多少( /分）
 		$inputObj['total_fee']=$amount;//订单总金额，单位为分
 
@@ -278,12 +279,14 @@ class WechatPayController extends BaseController
                 $result['data']=$data;
 				/**测试**/
 				DB::beginTransaction();
-				$userInfo = DB::table('wechats')->where('openid','=',$openid)->first();
-				$mokaid = $userInfo->mokaid;
-				$orderInfo = DB::table('Status')->where(['customer'=>$mokaid,'target_id'=>$orderNum,'status'=>1])->first();
-				$orderInfo->update(['status'=>2]);	
+				//$userInfo = DB::table('wechats')->where('openid','=',$testopenid)->first();
+				//$mokaid = $userInfo->mokaid;
+				$userInfo = JWTAuth::toUser();
+				$mokaid = $userInfo['moka'];Log::info($mokaid);
+				$orderInfo = DB::table('Status')->where(['customer'=>$mokaid,'target'=>'2','id'=>$orderNum,'status'=>1])
+							->update(['status'=>2]);	
 				DB::commit();
-				Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
+				//Log::info('user:'.$openid.' pay '.$msg['total_fee'].'.time:'.$msg['time_end']);
 				/****/
                 return response()->json($result);
             //}else{

@@ -80,7 +80,7 @@ class StatusController extends BaseController
       $status = $request->input('status');
       $deal = DB::table('Status')
         ->where('id',$id)
-        ->where('status',1)
+        // ->where('status',1)
         ->where('boss',$role['moka']);
       if ($deal->get()->count() == 0) {
         $result = $this->returnMsg('500',"error id");
