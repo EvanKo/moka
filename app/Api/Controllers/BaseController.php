@@ -48,7 +48,7 @@ class BaseController extends Controller
         ->update(['value' => $value]);
       return true;
     }
-    
+
     /**
      * 增加一条金币/零钱增加记录
      *
@@ -61,9 +61,9 @@ class BaseController extends Controller
     {
         //type 1为金币
         if($type==1){
-          $result = GoldRecord::create(['mokaid'=>$mokaid,'gold'=>'+'.$number, 'type'=>$type]);
+          $result = GoldRecord::create(['mokaid'=>$mokaid, 'gold'=>'+'.$number, 'type'=>$type, 'ps'=>$ps]);
         }else if($type==2){//type 2为零钱
-          $result = GoldRecord::create(['mokaid'=>$mokaid,'money'=>'+'.$number, 'type'=>$type]);
+          $result = GoldRecord::create(['mokaid'=>$mokaid, 'money'=>'+'.$number, 'type'=>$type, 'ps'=>$ps]);
         }else{
           return False;
         }
@@ -82,13 +82,13 @@ class BaseController extends Controller
      * @param [int] $type
      * @return true or false
      */
-    public function decreaseAccountRecord($mokaid, $number, $type)
+    public function decreaseAccountRecord($mokaid, $number, $type, $ps='')
     {
         //type 1为金币
         if($type==1){
-          $result = GoldRecord::create(['mokaid'=>$mokaid,'gold'=>'-'.$number, 'type'=>$type]);
+          $result = GoldRecord::create(['mokaid'=>$mokaid, 'gold'=>'-'.$number, 'type'=>$type,'ps'=>$ps]);
         }else if($type==2){//type 2为零钱
-          $result = GoldRecord::create(['mokaid'=>$mokaid,'money'=>'-'.$number, 'type'=>$type]);
+          $result = GoldRecord::create(['mokaid'=>$mokaid, 'money'=>'-'.$number, 'type'=>$type, 'ps'=>$ps]);
         }else{
           return False;
         }
