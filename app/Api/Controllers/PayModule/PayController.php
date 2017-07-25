@@ -195,7 +195,7 @@ class PayController extends BaseController
 		}
 		$rest = $userInfo['gold_account'];		
 		$mokaid = $userInfo['moka'];
-		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'1'])->select(['gold','created_at'])->get();
+		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'1'])->select(['gold', 'ps', 'created_at'])->get();
 		return $this->returnMsg('200','ok',[ 'remain_money'=>$rest,'detail'=>$data ]);
 	}
 
@@ -213,7 +213,7 @@ class PayController extends BaseController
 			return $this->returnMsg('500','token invalid');
 		}
 		$mokaid = $userInfo['moka'];
-		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'2'])->select(['money', 'created_at'])->get();
+		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'2'])->select(['money', 'ps', 'created_at'])->get();
 		return $this->returnMsg('200','ok',[ 'remain_money'=>$rest,'detail'=>$data ]);
 	}
 

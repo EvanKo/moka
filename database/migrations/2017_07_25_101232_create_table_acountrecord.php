@@ -19,6 +19,7 @@ class CreateTableAcountrecord extends Migration
             $table->string('gold')->nullable();
             $table->string('money')->nullable();
             $table->integer('type');
+            $table->string('ps')->nullable();
             $table->timestamps();
         });
     }
