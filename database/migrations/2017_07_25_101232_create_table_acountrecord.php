@@ -16,8 +16,8 @@ class CreateTableAcountrecord extends Migration
         Schema::create('account_records', function($table){
             $table->increments('id');
             $table->string('mokaid');
-            $table->string('gold');
-            $table->string('money');
+            $table->string('gold')->nullable();
+            $table->string('money')->nullable();
             $table->integer('type');
             $table->timestamps();
         });
