@@ -137,6 +137,7 @@ class PayController extends BaseController
 		$amount = DB::table('Roles')->where('moka', '=', $to_mokaid)->select('money')->first();	
 		$result = DB::table('Roles')->where('moka', '=', $to_mokaid)->update(['money'=>$price+$amount->money]);
 		if($result){
+			GoldRecord::create(['mokaid'=>$to_mokaid,'money'=>$price,'type'=>'2']);
 			return $this->returnMsg('200','ok, finishd the order');
 		}else{
 			return $this->returnMsg('500','fail');
@@ -194,7 +195,7 @@ class PayController extends BaseController
 		}
 		$rest = $userInfo['gold_account'];		
 		$mokaid = $userInfo['moka'];
-		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'1'])->get();
+		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'1'])->select(['gold','created_at'])->get();
 		return $this->returnMsg('200','ok',[ 'remain_money'=>$rest,'detail'=>$data ]);
 	}
 
@@ -212,7 +213,7 @@ class PayController extends BaseController
 			return $this->returnMsg('500','token invalid');
 		}
 		$mokaid = $userInfo['moka'];
-		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'2'])->get();
+		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'2'])->select(['money', 'created_at'])->get();
 		return $this->returnMsg('200','ok',[ 'remain_money'=>$rest,'detail'=>$data ]);
 	}
 

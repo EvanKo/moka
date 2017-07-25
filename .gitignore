@@ -1,4 +1,4 @@
 .env
-./vendor
-./public
-./database/migrations
+vendor/*
+public/*
+database/migrations
