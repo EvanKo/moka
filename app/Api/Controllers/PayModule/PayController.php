@@ -13,6 +13,7 @@ use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\TestCase;
 use App\Http\Requests;
 use App\Order;
+use App\GoldRecord;
 use JWTAuth;
 use DB;
 
@@ -161,8 +162,60 @@ class PayController extends BaseController
 			return $this->returnMsg('403','not enough money');
 		}
 	}
-
 	
+	/**
+	 * 获取金币和零钱
+	 *
+	 * @param Request $request
+	 * @return void
+	 */
+	public function getAccount(Request $request)
+	{
+		$userInfo = JWTAuth::toUser();
+		if(!$userInfo){
+			return $this->returnMsg('500','token invalid');
+		}
+		$data['money'] = $userInfo['money'];
+		$data['gold'] = $userInfo['gold_account'];
+		return $this->returnMsg('200','ok',$data);
+	}
+	
+	/**
+	 * 获取金币详细
+	 *
+	 * @param Request $request
+	 * @return void
+	 */
+	public function getGoldDetail(Request $request)
+	{
+		$userInfo = JWTAuth::toUser();
+		if(!$userInfo){
+			return $this->returnMsg('500','token invalid');
+		}
+		$rest = $userInfo['gold_account'];		
+		$mokaid = $userInfo['moka'];
+		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'1'])->get();
+		return $this->returnMsg('200','ok',[ 'remain_money'=>$rest,'detail'=>$data ]);
+	}
+
+	/**
+	 * 获取零钱详细
+	 *
+	 * @param Request $request
+	 * @return void
+	 */
+	public function getMoneyDetail(Request $request)
+	{
+		$userInfo = JWTAuth::toUser();
+		$rest = $userInfo['money'];
+		if(!$userInfo){
+			return $this->returnMsg('500','token invalid');
+		}
+		$mokaid = $userInfo['moka'];
+		$data = GoldRecord::where(['mokaid'=>$mokaid,'type'=>'2'])->get();
+		return $this->returnMsg('200','ok',[ 'remain_money'=>$rest,'detail'=>$data ]);
+	}
+
 	//检查用户余额是否足够
 	public function checkMoney($mokaid,$money)
 	{

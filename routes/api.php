@@ -38,6 +38,12 @@ $api->version('v1', function ($api) {
 		$api->post('recharge','PayModule\PayController@recharge');
 		//打赏目标
 		$api->post('paytomoka','PayModule\PhotoController@pay');
+        //获取金币和钱余额
+        $api->get('/user/account','PayModule\PayController@getAccount');
+        //金币详情
+        $api->get('/user/goldDetail','PayModule\PayController@getGoldDetail');
+        //零钱详情
+        $api->get('/user/moneyDetail','PayModule\PayController@getMoneyDetail');
 		//设置打赏额度
 	    $api->post('setfee','PayModule\PayController@setFee');
 		//购买会员
